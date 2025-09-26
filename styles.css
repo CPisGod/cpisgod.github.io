@@ -1,0 +1,617 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 400px;
+    margin: 0 auto;
+    background-color: #e8d5e0;
+    border-radius: 15px;
+    padding: 30px 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 화면 표시 관리 */
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+.home-screen {
+    display: block;
+}
+
+.date-header {
+    text-align: center;
+    font-size: 32px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+}
+
+/* 홈 화면 메뉴 버튼 */
+.menu-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.menu-button {
+    flex: 1;
+    background-color: #8e7cc3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s;
+}
+
+.menu-button:hover {
+    background-color: #7b6ba8;
+}
+
+/* 캘린더 스타일 */
+.calendar {
+    margin-bottom: 30px;
+}
+
+.calendar-header {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.month-nav {
+    background-color: #8e7cc3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s;
+}
+
+.month-nav:hover {
+    background-color: #7b6ba8;
+}
+
+.month-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.calendar-month {
+    font-size: 14px;
+    color: #666;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.weekday {
+    text-align: center;
+    padding: 8px;
+    font-weight: bold;
+    font-size: 12px;
+    color: white;
+    border-radius: 5px;
+}
+
+.weekday.sun { background-color: #ff4444; }
+.weekday.mon { background-color: #333; }
+.weekday.tue { background-color: #333; }
+.weekday.wed { background-color: #333; }
+.weekday.thu { background-color: #333; }
+.weekday.fri { background-color: #333; }
+.weekday.sat { background-color: #4444ff; }
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    border: 2px solid #333;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: white;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.calendar-day:hover {
+    background-color: #f0f0f0;
+}
+
+.calendar-day.sunday {
+    color: #ff4444;
+}
+
+.calendar-day.saturday {
+    color: #4444ff;
+}
+
+.calendar-day.today {
+    background-color: #ffeb3b;
+    font-weight: bold;
+}
+
+.calendar-day.has-dday {
+    background-color: #ffe0e6;
+}
+
+.calendar-day.has-dday::after {
+    content: '●';
+    position: absolute;
+    bottom: 2px;
+    right: 4px;
+    color: #ff4444;
+    font-size: 8px;
+}
+
+.calendar-day.empty {
+    border: none;
+    cursor: default;
+    background-color: transparent;
+}
+
+.calendar-day.empty:hover {
+    background-color: transparent;
+}
+
+/* D-DAY 섹션 */
+.dday-section {
+    margin-bottom: 20px;
+}
+
+.dday-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.dday-container {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.dday-box {
+    background-color: #c4c4c4;
+    border-radius: 15px;
+    padding: 15px 20px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.dday-box:hover {
+    background-color: #b8b8b8;
+}
+
+.dday-box .delete-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+}
+
+.dday-box:hover .delete-btn {
+    display: block;
+}
+
+.empty-dday {
+    color: #666;
+    font-style: italic;
+    font-weight: normal;
+}
+
+.add-button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #8e7cc3;
+    color: white;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    margin: 0 auto;
+    display: block;
+    transition: background-color 0.3s;
+}
+
+.add-button:hover {
+    background-color: #7b6ba8;
+}
+
+/* 급식 화면 스타일 */
+.meal-section {
+    margin-bottom: 25px;
+}
+
+.meal-card {
+    background-color: #fafafa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.meal-title {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.meal-content {
+    font-size: 16px;
+    color: #444;
+    line-height: 1.6;
+}
+
+.meal-item {
+    margin-bottom: 5px;
+}
+
+.loading {
+    text-align: center;
+    color: #666;
+    font-size: 16px;
+}
+
+/* 시간표 화면 스타일 */
+.grade-class-input {
+    text-align: center;
+    padding: 20px;
+}
+
+.input-header h2 {
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.input-header p {
+    color: #666;
+    margin-bottom: 30px;
+    font-size: 16px;
+}
+
+.input-form {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+    font-size: 16px;
+}
+
+.input-group select,
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.input-group select:focus,
+.input-group input:focus {
+    outline: none;
+    border-color: #8e7cc3;
+}
+
+.input-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.input-button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.input-button.confirm {
+    background-color: #8e7cc3;
+    color: white;
+}
+
+.input-button.confirm:hover {
+    background-color: #7b6ba8;
+}
+
+.input-button.cancel {
+    background-color: #ddd;
+    color: #333;
+}
+
+.input-button.cancel:hover {
+    background-color: #ccc;
+}
+
+.input-error {
+    background-color: #ffebee;
+    color: #d32f2f;
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 20px;
+    font-weight: bold;
+    border: 1px solid #ffcdd2;
+}
+
+.timetable-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.class-info {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+.settings-button {
+    background-color: #8e7cc3;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.settings-button:hover {
+    background-color: #7b6ba8;
+}
+
+.week-navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.week-info {
+    text-align: center;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+
+.timetable-container {
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.timetable th,
+.timetable td {
+    border: 1px solid #ddd;
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 12px;
+}
+
+.timetable th {
+    background-color: #8e7cc3;
+    color: white;
+    font-weight: bold;
+}
+
+.time-cell {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    width: 60px;
+}
+
+.subject-cell {
+    background-color: white;
+    min-height: 35px;
+    font-size: 11px;
+    line-height: 1.2;
+}
+
+.subject-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.teacher-name {
+    color: #666;
+    font-size: 10px;
+}
+
+.classroom-name {
+    color: #888;
+    font-size: 9px;
+}
+
+.empty-period {
+    color: #ccc;
+    font-style: italic;
+}
+
+/* 네비게이션 버튼 */
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.nav-button {
+    background-color: #8e7cc3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+
+.nav-button:hover {
+    background-color: #7b6ba8;
+}
+
+.nav-button:active {
+    transform: translateY(1px);
+}
+
+/* 홈 버튼 */
+.home-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #8e7cc3;
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s;
+}
+
+.home-button:hover {
+    background-color: #7b6ba8;
+}
+
+/* D-Day 입력 모달 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 30px;
+    border-radius: 15px;
+    width: 80%;
+    max-width: 400px;
+}
+
+.modal h3 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.modal input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.modal-button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.modal-button.save {
+    background-color: #8e7cc3;
+    color: white;
+}
+
+.modal-button.cancel {
+    background-color: #ddd;
+    color: #333;
+}
