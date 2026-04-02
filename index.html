@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>메모장</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f5f5f0;
+      font-family: 'Courier New', monospace;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    #status {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 10px;
+      align-self: flex-start;
+      max-width: 900px;
+      width: 100%;
+    }
+
+    #memo {
+      width: 100%;
+      max-width: 900px;
+      height: 80vh;
+      border: 2px solid #333;
+      background: #fffffe;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      line-height: 1.7;
+      color: #222;
+      resize: none;
+      outline: none;
+    }
+
+    #memo:focus {
+      border-color: #000;
+    }
+
+    #bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 900px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    #charcount {
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    #save-btn {
+      background: #333;
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    #save-btn:hover { background: #000; }
+    #save-btn:disabled { background: #aaa; cursor: default; }
+  </style>
+</head>
+<body>
+
+  <div id="status">⏳ Firebase 연결 중...</div>
+  <textarea id="memo" placeholder="여기에 메모를 입력하세요..."></textarea>
+  <div id="bottom">
+    <span id="charcount">0자</span>
+    <button id="save-btn" disabled>저장</button>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyDgjizBR_P_ccjZczxcvCLmVuUi2wKIQYU",
+      authDomain:        "memo-acd0e.firebaseapp.com",
+      databaseURL:       "https://memo-acd0e-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId:         "memo-acd0e",
+      storageBucket:     "memo-acd0e.firebasestorage.app",
+      messagingSenderId: "116520806995",
+      appId:             "1:116520806995:web:abbafb950052296db8b4a6",
+      measurementId:     "G-9H3GX7SWKG"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+    const memoRef = ref(db, "memo/content");
+
+    const textarea  = document.getElementById("memo");
+    const status    = document.getElementById("status");
+    const saveBtn   = document.getElementById("save-btn");
+    const charcount = document.getElementById("charcount");
+
+    let saveTimer = null;
+
+    // Firebase에서 메모 불러오기
+    onValue(memoRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data !== null) {
+        textarea.value = data;
+        charcount.textContent = data.length + "자";
+      }
+      status.textContent = "✅ 연결됨";
+      saveBtn.disabled = false;
+    }, (error) => {
+      status.textContent = "❌ 연결 실패: " + error.message;
+    });
+
+    // 저장 함수
+    function save() {
+      saveBtn.disabled = true;
+      saveBtn.textContent = "저장 중...";
+      set(memoRef, textarea.value)
+        .then(() => {
+          status.textContent = "✅ 저장됨 — " + new Date().toLocaleTimeString();
+          saveBtn.textContent = "저장";
+          saveBtn.disabled = false;
+        })
+        .catch((e) => {
+          status.textContent = "❌ 저장 실패: " + e.message;
+          saveBtn.textContent = "저장";
+          saveBtn.disabled = false;
+        });
+    }
+
+    // 버튼 클릭 저장
+    saveBtn.addEventListener("click", save);
+
+    // Ctrl+S / Cmd+S 저장
+    textarea.addEventListener("keydown", (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        save();
+      }
+    });
+
+    // 글자수 카운트
+    textarea.addEventListener("input", () => {
+      charcount.textContent = textarea.value.length + "자";
+    });
+  </script>
+</body>
+</html>
