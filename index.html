@@ -12,53 +12,125 @@
       font-family: 'Courier New', monospace;
       height: 100vh;
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
+      overflow: hidden;
     }
+
+    /* ── 사이드바 ── */
+    #sidebar {
+      width: 220px;
+      min-width: 220px;
+      background: #222;
+      color: #ddd;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    #sidebar-header {
+      padding: 16px 14px 10px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      color: #777;
+      text-transform: uppercase;
+      border-bottom: 1px solid #333;
+    }
+
+    #new-btn {
+      margin: 12px 10px;
+      background: #444;
+      color: #eee;
+      border: none;
+      padding: 8px 0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      width: calc(100% - 20px);
+    }
+    #new-btn:hover { background: #555; }
+
+    #memo-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .memo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      cursor: pointer;
+      border-bottom: 1px solid #2e2e2e;
+      font-size: 13px;
+      color: #bbb;
+    }
+    .memo-item:hover { background: #2a2a2a; }
+    .memo-item.active { background: #333; color: #fff; }
+
+    .memo-item-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #555;
+      font-size: 16px;
+      cursor: pointer;
+      padding: 0 0 0 8px;
+      line-height: 1;
+    }
+    .delete-btn:hover { color: #f55; }
 
     #status {
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 10px;
-      align-self: flex-start;
-      max-width: 900px;
-      width: 100%;
+      padding: 10px 14px;
+      font-size: 11px;
+      color: #555;
+      border-top: 1px solid #2a2a2a;
+      min-height: 34px;
     }
 
-    #memo {
-      width: 100%;
-      max-width: 900px;
-      height: 80vh;
-      border: 2px solid #333;
-      background: #fffffe;
-      padding: 20px;
-      font-family: 'Courier New', monospace;
-      font-size: 16px;
-      line-height: 1.7;
-      color: #222;
-      resize: none;
-      outline: none;
-    }
-
-    #memo:focus {
-      border-color: #000;
-    }
-
-    #bottom {
+    /* ── 메인 에디터 ── */
+    #main {
+      flex: 1;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 900px;
-      width: 100%;
-      margin-top: 10px;
+      flex-direction: column;
+      height: 100vh;
+      padding: 20px 24px;
     }
 
-    #charcount {
-      font-size: 12px;
-      color: #aaa;
+    #empty-state {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #bbb;
+      font-size: 15px;
     }
+
+    #title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    #title-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid #aaa;
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      font-weight: bold;
+      color: #222;
+      outline: none;
+      padding: 4px 0;
+    }
+    #title-input:focus { border-bottom-color: #000; }
+    #title-input::placeholder { color: #ccc; }
 
     #save-btn {
       background: #333;
@@ -68,25 +140,53 @@
       font-family: 'Courier New', monospace;
       font-size: 13px;
       cursor: pointer;
+      white-space: nowrap;
     }
-
     #save-btn:hover { background: #000; }
     #save-btn:disabled { background: #aaa; cursor: default; }
+
+    #memo {
+      flex: 1;
+      border: 2px solid #333;
+      background: #fffffe;
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      line-height: 1.8;
+      color: #222;
+      resize: none;
+      outline: none;
+    }
+    #memo:focus { border-color: #000; }
+
+    #bottom-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+      font-size: 12px;
+      color: #aaa;
+    }
   </style>
 </head>
 <body>
 
-  <div id="status">⏳ Firebase 연결 중...</div>
-  <textarea id="memo" placeholder="여기에 메모를 입력하세요..."></textarea>
-  <div id="bottom">
-    <span id="charcount">0자</span>
-    <button id="save-btn" disabled>저장</button>
+  <!-- 사이드바 -->
+  <div id="sidebar">
+    <div id="sidebar-header">MEMOS</div>
+    <button id="new-btn">+ 새 메모</button>
+    <div id="memo-list"></div>
+    <div id="status">⏳ 연결 중...</div>
+  </div>
+
+  <!-- 에디터 영역 -->
+  <div id="main">
+    <div id="empty-state">← 메모를 선택하거나 새로 만드세요</div>
   </div>
 
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey:            "AIzaSyDgjizBR_P_ccjZczxcvCLmVuUi2wKIQYU",
@@ -99,61 +199,143 @@
       measurementId:     "G-9H3GX7SWKG"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db  = getDatabase(app);
-    const memoRef = ref(db, "memo/content");
+    const app      = initializeApp(firebaseConfig);
+    const db       = getDatabase(app);
+    const memosRef = ref(db, "memos");
 
-    const textarea  = document.getElementById("memo");
-    const status    = document.getElementById("status");
-    const saveBtn   = document.getElementById("save-btn");
-    const charcount = document.getElementById("charcount");
+    const memoListEl = document.getElementById("memo-list");
+    const mainDiv    = document.getElementById("main");
+    const statusEl   = document.getElementById("status");
+    const newBtn     = document.getElementById("new-btn");
 
-    let saveTimer = null;
+    let memos     = {};
+    let currentId = null;
 
-    // Firebase에서 메모 불러오기
-    onValue(memoRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data !== null) {
-        textarea.value = data;
-        charcount.textContent = data.length + "자";
-      }
-      status.textContent = "✅ 연결됨";
-      saveBtn.disabled = false;
-    }, (error) => {
-      status.textContent = "❌ 연결 실패: " + error.message;
-    });
+    // 에디터 요소 참조 (mountEditor 후 설정)
+    let editorEl = null;
+    let titleEl  = null;
 
-    // 저장 함수
+    // ── 에디터 마운트 ──
+    function mountEditor() {
+      mainDiv.innerHTML = `
+        <div id="title-row">
+          <input id="title-input" type="text" placeholder="제목 없음" maxlength="80" />
+          <button id="save-btn">저장</button>
+        </div>
+        <textarea id="memo" placeholder="여기에 메모를 입력하세요..."></textarea>
+        <div id="bottom-row"><span id="charcount">0자</span></div>
+      `;
+      editorEl = document.getElementById("memo");
+      titleEl  = document.getElementById("title-input");
+
+      document.getElementById("save-btn").addEventListener("click", save);
+      editorEl.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "s") { e.preventDefault(); save(); }
+      });
+      editorEl.addEventListener("input", () => {
+        document.getElementById("charcount").textContent = editorEl.value.length + "자";
+      });
+    }
+
+    // ── 메모 선택 ──
+    function selectMemo(id) {
+      currentId = id;
+      if (!editorEl) mountEditor();
+      const m = memos[id] || {};
+      titleEl.value  = m.title   || "";
+      editorEl.value = m.content || "";
+      document.getElementById("charcount").textContent = (m.content || "").length + "자";
+      renderList();
+      editorEl.focus();
+    }
+
+    // ── 저장 ──
     function save() {
+      if (!currentId) return;
+      const saveBtn = document.getElementById("save-btn");
       saveBtn.disabled = true;
       saveBtn.textContent = "저장 중...";
-      set(memoRef, textarea.value)
+      const title   = titleEl.value.trim() || "제목 없음";
+      const content = editorEl.value;
+      set(ref(db, `memos/${currentId}`), { title, content })
         .then(() => {
-          status.textContent = "✅ 저장됨 — " + new Date().toLocaleTimeString();
+          statusEl.textContent = "✅ " + new Date().toLocaleTimeString();
           saveBtn.textContent = "저장";
           saveBtn.disabled = false;
         })
         .catch((e) => {
-          status.textContent = "❌ 저장 실패: " + e.message;
+          statusEl.textContent = "❌ " + e.message;
           saveBtn.textContent = "저장";
           saveBtn.disabled = false;
         });
     }
 
-    // 버튼 클릭 저장
-    saveBtn.addEventListener("click", save);
-
-    // Ctrl+S / Cmd+S 저장
-    textarea.addEventListener("keydown", (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-        e.preventDefault();
-        save();
-      }
+    // ── 새 메모 ──
+    newBtn.addEventListener("click", () => {
+      const newRef = push(memosRef);
+      set(newRef, { title: "새 메모", content: "" }).then(() => {
+        selectMemo(newRef.key);
+      });
     });
 
-    // 글자수 카운트
-    textarea.addEventListener("input", () => {
-      charcount.textContent = textarea.value.length + "자";
+    // ── 삭제 ──
+    function deleteMemo(id) {
+      if (!confirm("이 메모를 삭제할까요?")) return;
+      remove(ref(db, `memos/${id}`)).then(() => {
+        if (currentId === id) {
+          currentId = null;
+          editorEl  = null;
+          titleEl   = null;
+          mainDiv.innerHTML = '<div id="empty-state" style="flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:15px;">← 메모를 선택하거나 새로 만드세요</div>';
+        }
+      });
+    }
+
+    // ── 목록 렌더링 ──
+    function renderList() {
+      memoListEl.innerHTML = "";
+      const ids = Object.keys(memos);
+      if (ids.length === 0) {
+        memoListEl.innerHTML = '<div style="padding:12px 14px;color:#555;font-size:12px;">메모 없음</div>';
+        return;
+      }
+      ids.forEach(id => {
+        const m    = memos[id];
+        const item = document.createElement("div");
+        item.className = "memo-item" + (id === currentId ? " active" : "");
+
+        const titleSpan = document.createElement("span");
+        titleSpan.className   = "memo-item-title";
+        titleSpan.textContent = m.title || "제목 없음";
+
+        const delBtn = document.createElement("button");
+        delBtn.className   = "delete-btn";
+        delBtn.textContent = "×";
+        delBtn.title       = "삭제";
+        delBtn.addEventListener("click", (e) => { e.stopPropagation(); deleteMemo(id); });
+
+        item.appendChild(titleSpan);
+        item.appendChild(delBtn);
+        item.addEventListener("click", () => selectMemo(id));
+        memoListEl.appendChild(item);
+      });
+    }
+
+    // ── Firebase 실시간 동기화 ──
+    onValue(memosRef, (snapshot) => {
+      memos = snapshot.val() || {};
+      statusEl.textContent = "✅ 연결됨";
+      renderList();
+      // 현재 열린 메모가 외부(다른 기기 등)에서 수정됐을 때 반영
+      if (currentId && memos[currentId] && editorEl) {
+        if (document.activeElement !== editorEl && document.activeElement !== titleEl) {
+          titleEl.value  = memos[currentId].title   || "";
+          editorEl.value = memos[currentId].content || "";
+          document.getElementById("charcount").textContent = (memos[currentId].content || "").length + "자";
+        }
+      }
+    }, (error) => {
+      statusEl.textContent = "❌ " + error.message;
     });
   </script>
 </body>
