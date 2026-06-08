@@ -306,49 +306,43 @@
   }
 
   // ── 거터 렌더링 ──
-  // 문단 단위가 아니라 일정한 간격(라인 높이 기반)으로 표기
+  // 각 <p>의 offsetTop, offsetHeight를 그대로 반영해서 정확히 맞춤
   function renderGutter(panelIdx) {
     const p = panels[panelIdx];
     if (!p || !p.gutterEl || !p.editorEl) return;
 
-    const pinSet = p.memoId ? getPins(p.memoId) : new Set();
-    const inner  = p.gutterEl.querySelector(".gutter-inner");
+    const pinSet    = p.memoId ? getPins(p.memoId) : new Set();
+    const paras     = p.editorEl.querySelectorAll("p");
+    const inner     = p.gutterEl.querySelector(".gutter-inner");
     if (!inner) return;
     inner.innerHTML = "";
 
-    const editor = p.editorEl;
-    const style  = getComputedStyle(editor);
-    const editorPaddingTop = parseFloat(style.paddingTop) || 0;
-    let lineH    = parseFloat(style.lineHeight);
-    if (isNaN(lineH) || lineH === 0) {
-      const fs = parseFloat(style.fontSize) || 16;
-      lineH = fs * 2;
-    }
-    const step = Math.max(12, Math.round(lineH));
+    // 에디터 padding-top (18px)
+    const editorPaddingTop = parseFloat(getComputedStyle(p.editorEl).paddingTop) || 0;
 
-    const total = editor.scrollHeight;
-    let idx = 0;
-    for (let y = editorPaddingTop; y < total; y += step, idx++) {
+    paras.forEach((para, i) => {
       const row = document.createElement("div");
       row.className = "gutter-row";
+      // <p>의 에디터 내 위치와 높이를 그대로 사용
       row.style.position = "absolute";
-      row.style.top      = y + "px";
-      row.style.height   = step + "px";
+      row.style.top      = (para.offsetTop + editorPaddingTop - editorPaddingTop) + "px";
+      row.style.height   = para.offsetHeight + "px";
       row.style.width    = "100%";
 
       const dot = document.createElement("div");
-      dot.className = "pin-dot" + (pinSet.has(idx) ? " on" : "");
+      dot.className = "pin-dot" + (pinSet.has(i) ? " on" : "");
 
       row.addEventListener("click", () => {
-        pinSet.has(idx) ? pinSet.delete(idx) : pinSet.add(idx);
+        pinSet.has(i) ? pinSet.delete(i) : pinSet.add(i);
         dot.classList.toggle("on");
       });
 
       row.appendChild(dot);
       inner.appendChild(row);
-    }
+    });
 
-    inner.style.height = editor.scrollHeight + "px";
+    // inner 높이를 에디터 scrollHeight에 맞춤
+    inner.style.height = p.editorEl.scrollHeight + "px";
   }
 
   // ── 패널 DOM 생성 ──
@@ -399,6 +393,14 @@
       if (inner) inner.style.transform = `translateY(-${editor.scrollTop}px)`;
     });
 
+    // 붙여넣기 시 서식 제거 → 순수 텍스트만
+    editor.addEventListener("paste", (e) => {
+      e.preventDefault();
+      const text = e.clipboardData.getData("text/plain");
+      document.execCommand("insertText", false, text);
+      requestAnimationFrame(() => renderGutter(panelIdx));
+    });
+
     const ro = new ResizeObserver(() => requestAnimationFrame(() => renderGutter(panelIdx)));
     ro.observe(editor);
 
@@ -413,6 +415,9 @@
     p.titleEl.value      = m.title   || "";
     p.editorEl.innerHTML = textToHtml(m.content || "");
     p.editorEl.setAttribute("data-placeholder", "여기에 메모를 입력하세요...");
+    // pins 로드
+    const savedPins = m.pins ? new Set(m.pins) : new Set();
+    pins[memoId] = savedPins;
     requestAnimationFrame(() => renderGutter(panelIdx));
     renderList();
   }
@@ -425,7 +430,8 @@
     if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "저장 중..."; }
     const title   = p.titleEl.value.trim() || "제목 없음";
     const content = htmlToText(p.editorEl);
-    set(ref(db, `memos/${p.memoId}`), { title, content })
+    const pinArr  = p.memoId && pins[p.memoId] ? Array.from(pins[p.memoId]) : [];
+    set(ref(db, `memos/${p.memoId}`), { title, content, pins: pinArr })
       .then(() => {
         statusEl.textContent = "✅ " + new Date().toLocaleTimeString();
         if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
@@ -542,6 +548,13 @@
   onValue(memosRef, (snapshot) => {
     memos = snapshot.val() || {};
     statusEl.textContent = "✅ 연결됨";
+    // 열려있는 패널의 pins 갱신
+    panels.forEach((p, i) => {
+      if (p && p.memoId && memos[p.memoId]) {
+        const m = memos[p.memoId];
+        if (m.pins) pins[p.memoId] = new Set(m.pins);
+      }
+    });
     renderList();
   }, (e) => { statusEl.textContent = "❌ " + e.message; });
 
