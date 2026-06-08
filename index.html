@@ -18,10 +18,9 @@
       overflow: hidden;
     }
 
-    /* ── 사이드바 ── */
     #sidebar {
-      width: 220px;
-      min-width: 220px;
+      width: 200px;
+      min-width: 200px;
       background: #222;
       color: #ddd;
       display: flex;
@@ -37,30 +36,46 @@
       border-bottom: 1px solid #333;
     }
     #new-btn {
-      margin: 12px 10px;
+      margin: 10px 10px 4px;
       background: #444;
       color: #eee;
       border: none;
-      padding: 8px 0;
+      padding: 7px 0;
       font-family: 'Noto Sans KR', sans-serif;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
       width: calc(100% - 20px);
     }
     #new-btn:hover { background: #555; }
+    #split-toggle {
+      margin: 4px 10px 10px;
+      background: #2a2a2a;
+      color: #888;
+      border: 1px solid #3a3a3a;
+      padding: 6px 0;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 11px;
+      cursor: pointer;
+      width: calc(100% - 20px);
+    }
+    #split-toggle:hover { background: #333; color: #bbb; }
+    #split-toggle.on { background: #3a3a3a; color: #eee; border-color: #555; }
+
     #memo-list { flex: 1; overflow-y: auto; }
     .memo-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 10px 14px;
+      padding: 9px 14px;
       cursor: pointer;
       border-bottom: 1px solid #2e2e2e;
-      font-size: 13px;
+      font-size: 12px;
       color: #bbb;
     }
     .memo-item:hover { background: #2a2a2a; }
-    .memo-item.active { background: #333; color: #fff; }
+    .memo-item.active-main { background: #2d3a2d; color: #8fbc8f; }
+    .memo-item.active-sub  { background: #2d2d3a; color: #8f8fbc; }
+    .memo-item.active-both { background: #3a3a2d; color: #bcbc8f; }
     .memo-item-title {
       white-space: nowrap;
       overflow: hidden;
@@ -71,99 +86,118 @@
       background: none;
       border: none;
       color: #555;
-      font-size: 16px;
+      font-size: 15px;
       cursor: pointer;
-      padding: 0 0 0 8px;
-      line-height: 1;
+      padding: 0 0 0 6px;
     }
     .delete-btn:hover { color: #f55; }
     #status {
-      padding: 10px 14px;
-      font-size: 11px;
+      padding: 8px 14px;
+      font-size: 10px;
       color: #555;
       border-top: 1px solid #2a2a2a;
-      min-height: 34px;
+      min-height: 30px;
     }
 
-    /* ── 메인 ── */
-    #main {
+    #panels {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    .panel {
       flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      padding: 20px 24px;
       overflow: hidden;
+      min-width: 0;
     }
-    #empty-state {
-      flex: 1;
+    .panel + .panel { border-left: 3px solid #bbb; }
+
+    .divider {
+      width: 4px;
+      background: #ccc;
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      z-index: 10;
+    }
+    .divider:hover, .divider.dragging { background: #888; }
+
+    .panel-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      color: #bbb;
-      font-size: 15px;
+      gap: 10px;
+      padding: 12px 16px 10px;
+      border-bottom: 1px solid #ddd;
+      background: #f5f5f0;
+      flex-shrink: 0;
     }
-    #title-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-    #title-input {
+    .panel-title-input {
       flex: 1;
       background: transparent;
       border: none;
       border-bottom: 2px solid #aaa;
       font-family: 'Noto Sans KR', sans-serif;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: bold;
       color: #222;
       outline: none;
-      padding: 4px 0;
+      padding: 3px 0;
+      min-width: 0;
     }
-    #title-input:focus { border-bottom-color: #000; }
-    #title-input::placeholder { color: #ccc; }
-    #save-btn {
+    .panel-title-input:focus { border-bottom-color: #000; }
+    .panel-title-input::placeholder { color: #ccc; }
+    .save-btn {
       background: #333;
       color: #fff;
       border: none;
-      padding: 8px 20px;
+      padding: 7px 16px;
       font-family: 'Noto Sans KR', sans-serif;
-      font-size: 13px;
+      font-size: 12px;
       cursor: pointer;
       white-space: nowrap;
+      flex-shrink: 0;
     }
-    #save-btn:hover { background: #000; }
-    #save-btn:disabled { background: #aaa; cursor: default; }
+    .save-btn:hover { background: #000; }
+    .save-btn:disabled { background: #aaa; cursor: default; }
 
-    /* ── 에디터 래퍼 (줄번호 + 핀 + textarea) ── */
-    #editor-wrap {
+    .panel:nth-child(1) .panel-header { border-top: 3px solid #5a9a5a; }
+    .panel:nth-child(3) .panel-header { border-top: 3px solid #5a5a9a; }
+
+    .editor-wrap {
       flex: 1;
       display: flex;
-      border: 2px solid #333;
       background: #fffffe;
       overflow: hidden;
+      position: relative;
     }
-    #editor-wrap:focus-within { border-color: #000; }
 
-    /* 핀 거터 */
-    #gutter {
+    .gutter {
       width: 28px;
       min-width: 28px;
       background: #f0f0ec;
       border-right: 1px solid #ddd;
       overflow: hidden;
-      position: relative;
-      cursor: default;
       user-select: none;
+      flex-shrink: 0;
+      /* 거터는 스크롤 없이 에디터 스크롤과 동기화 */
+      position: relative;
     }
-    .gutter-line {
-      height: var(--lh);
+    /* 거터 내부 절대 위치 컨테이너 */
+    .gutter-inner {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+    }
+    .gutter-row {
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      width: 100%;
     }
-    .gutter-line:hover .pin-dot { opacity: 0.35; }
+    .gutter-row:hover .pin-dot:not(.on) { opacity: 0.3; }
     .pin-dot {
       width: 11px;
       height: 11px;
@@ -173,262 +207,345 @@
       transition: opacity 0.1s;
       flex-shrink: 0;
     }
-    .pin-dot.active { opacity: 1 !important; }
+    .pin-dot.on { opacity: 1; }
 
-    /* textarea */
-    #memo {
+    .memo-editor {
       flex: 1;
-      border: none;
-      background: transparent;
-      padding: 0 20px;
+      padding: 18px 20px;
       font-family: 'Noto Serif KR', serif;
       font-size: 16px;
-      line-height: var(--lh-num);
       color: #222;
-      resize: none;
       outline: none;
       overflow-y: auto;
-      white-space: pre-wrap;
+      overflow-x: hidden;
       word-break: break-word;
+      white-space: pre-wrap;
+      cursor: text;
+    }
+    .memo-editor:empty::before {
+      content: attr(data-placeholder);
+      color: #ccc;
+      pointer-events: none;
+    }
+    .memo-editor p {
+      line-height: 2.0;
+      margin: 0;
+      min-height: 1.2em;
     }
 
-    #bottom-row {
+    .panel-bottom {
       display: flex;
       justify-content: flex-end;
-      margin-top: 8px;
-      font-size: 12px;
+      padding: 5px 16px;
+      font-size: 11px;
       color: #aaa;
+      background: #f5f5f0;
+      border-top: 1px solid #e8e8e4;
+      flex-shrink: 0;
     }
   </style>
 </head>
 <body>
 
-  <!-- 사이드바 -->
-  <div id="sidebar">
-    <div id="sidebar-header">MEMOS</div>
-    <button id="new-btn">+ 새 메모</button>
-    <div id="memo-list"></div>
-    <div id="status">⏳ 연결 중...</div>
-  </div>
+<div id="sidebar">
+  <div id="sidebar-header">MEMOS</div>
+  <button id="new-btn">+ 새 메모</button>
+  <button id="split-toggle">⊟ 분할화면</button>
+  <div id="memo-list"></div>
+  <div id="status">⏳ 연결 중...</div>
+</div>
 
-  <!-- 메인 -->
-  <div id="main">
-    <div id="empty-state">← 메모를 선택하거나 새로 만드세요</div>
-  </div>
+<div id="panels"></div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey:            "AIzaSyDgjizBR_P_ccjZczxcvCLmVuUi2wKIQYU",
-      authDomain:        "memo-acd0e.firebaseapp.com",
-      databaseURL:       "https://memo-acd0e-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId:         "memo-acd0e",
-      storageBucket:     "memo-acd0e.firebasestorage.app",
-      messagingSenderId: "116520806995",
-      appId:             "1:116520806995:web:abbafb950052296db8b4a6",
-      measurementId:     "G-9H3GX7SWKG"
-    };
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDgjizBR_P_ccjZczxcvCLmVuUi2wKIQYU",
+    authDomain:        "memo-acd0e.firebaseapp.com",
+    databaseURL:       "https://memo-acd0e-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId:         "memo-acd0e",
+    storageBucket:     "memo-acd0e.firebasestorage.app",
+    messagingSenderId: "116520806995",
+    appId:             "1:116520806995:web:abbafb950052296db8b4a6",
+    measurementId:     "G-9H3GX7SWKG"
+  };
 
-    const app      = initializeApp(firebaseConfig);
-    const db       = getDatabase(app);
-    const memosRef = ref(db, "memos");
+  const app      = initializeApp(firebaseConfig);
+  const db       = getDatabase(app);
+  const memosRef = ref(db, "memos");
 
-    const memoListEl = document.getElementById("memo-list");
-    const mainDiv    = document.getElementById("main");
-    const statusEl   = document.getElementById("status");
-    const newBtn     = document.getElementById("new-btn");
+  const panelsEl    = document.getElementById("panels");
+  const memoListEl  = document.getElementById("memo-list");
+  const statusEl    = document.getElementById("status");
+  const newBtn      = document.getElementById("new-btn");
+  const splitToggle = document.getElementById("split-toggle");
 
-    // 줄 높이 상수 (CSS와 맞춰야 함)
-    const LINE_HEIGHT_PX  = 38;   // 16px * 2.0 + padding 보정
-    const LINE_HEIGHT_NUM = 2.2;
+  let memos   = {};
+  let splitOn = false;
+  let pins    = {};  // { memoId: Set<paraIdx> }
+  let panels  = [];
 
-    let memos     = {};
-    let currentId = null;
-    let editorEl  = null;
-    let titleEl   = null;
-    let gutterEl  = null;
-    // pins: { memoId: Set<lineIndex> }
-    let pins      = {};
+  function getPins(id) {
+    if (!pins[id]) pins[id] = new Set();
+    return pins[id];
+  }
 
-    function getPins(id) {
-      if (!pins[id]) pins[id] = new Set();
-      return pins[id];
+  function textToHtml(text) {
+    if (!text) return "<p><br></p>";
+    return text.split("\n").map(l => `<p>${l ? esc(l) : "<br>"}</p>`).join("");
+  }
+  function esc(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function htmlToText(el) {
+    return Array.from(el.querySelectorAll("p")).map(p =>
+      (p.innerHTML === "<br>" || p.innerHTML === "") ? "" : p.innerText
+    ).join("\n");
+  }
+
+  // ── 거터 렌더링 ──
+  // 문단 단위가 아니라 일정한 간격(라인 높이 기반)으로 표기
+  function renderGutter(panelIdx) {
+    const p = panels[panelIdx];
+    if (!p || !p.gutterEl || !p.editorEl) return;
+
+    const pinSet = p.memoId ? getPins(p.memoId) : new Set();
+    const inner  = p.gutterEl.querySelector(".gutter-inner");
+    if (!inner) return;
+    inner.innerHTML = "";
+
+    const editor = p.editorEl;
+    const style  = getComputedStyle(editor);
+    const editorPaddingTop = parseFloat(style.paddingTop) || 0;
+    let lineH    = parseFloat(style.lineHeight);
+    if (isNaN(lineH) || lineH === 0) {
+      const fs = parseFloat(style.fontSize) || 16;
+      lineH = fs * 2;
     }
+    const step = Math.max(12, Math.round(lineH));
 
-    // ── 거터 렌더링 ──
-    function renderGutter() {
-      if (!gutterEl || !editorEl) return;
-      const text      = editorEl.value;
-      const lineCount = Math.max(text.split("\n").length, 1);
-      const pinSet    = getPins(currentId);
+    const total = editor.scrollHeight;
+    let idx = 0;
+    for (let y = editorPaddingTop; y < total; y += step, idx++) {
+      const row = document.createElement("div");
+      row.className = "gutter-row";
+      row.style.position = "absolute";
+      row.style.top      = y + "px";
+      row.style.height   = step + "px";
+      row.style.width    = "100%";
 
-      gutterEl.innerHTML = "";
-      gutterEl.style.setProperty("--lh", LINE_HEIGHT_PX + "px");
+      const dot = document.createElement("div");
+      dot.className = "pin-dot" + (pinSet.has(idx) ? " on" : "");
 
-      for (let i = 0; i < lineCount; i++) {
-        const row = document.createElement("div");
-        row.className = "gutter-line";
-        row.style.height = LINE_HEIGHT_PX + "px";
-
-        const dot = document.createElement("div");
-        dot.className = "pin-dot" + (pinSet.has(i) ? " active" : "");
-
-        row.appendChild(dot);
-        row.addEventListener("click", () => togglePin(i));
-        gutterEl.appendChild(row);
-      }
-    }
-
-    function togglePin(lineIdx) {
-      const pinSet = getPins(currentId);
-      if (pinSet.has(lineIdx)) pinSet.delete(lineIdx);
-      else pinSet.add(lineIdx);
-      renderGutter();
-    }
-
-    // ── 에디터 마운트 ──
-    function mountEditor() {
-      mainDiv.innerHTML = `
-        <div id="title-row">
-          <input id="title-input" type="text" placeholder="제목 없음" maxlength="80" />
-          <button id="save-btn">저장</button>
-        </div>
-        <div id="editor-wrap">
-          <div id="gutter"></div>
-          <textarea id="memo" placeholder="여기에 메모를 입력하세요..."></textarea>
-        </div>
-        <div id="bottom-row"><span id="charcount">0자</span></div>
-      `;
-
-      editorEl = document.getElementById("memo");
-      titleEl  = document.getElementById("title-input");
-      gutterEl = document.getElementById("gutter");
-
-      // CSS 변수 설정
-      editorEl.style.setProperty("--lh-num", LINE_HEIGHT_NUM);
-      editorEl.style.lineHeight = LINE_HEIGHT_NUM;
-
-      document.getElementById("save-btn").addEventListener("click", save);
-
-      // Ctrl+S — 어디서든
-      document.addEventListener("keydown", globalSave);
-
-      editorEl.addEventListener("input", () => {
-        document.getElementById("charcount").textContent = editorEl.value.length + "자";
-        renderGutter();
+      row.addEventListener("click", () => {
+        pinSet.has(idx) ? pinSet.delete(idx) : pinSet.add(idx);
+        dot.classList.toggle("on");
       });
 
-      // 스크롤 동기화 (거터 ↔ textarea)
-      editorEl.addEventListener("scroll", () => {
-        gutterEl.scrollTop = editorEl.scrollTop;
-      });
+      row.appendChild(dot);
+      inner.appendChild(row);
     }
 
-    function globalSave(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    inner.style.height = editor.scrollHeight + "px";
+  }
+
+  // ── 패널 DOM 생성 ──
+  function createPanelEl(panelIdx) {
+    const wrap = document.createElement("div");
+    wrap.className = "panel";
+
+    wrap.innerHTML = `
+      <div class="panel-header">
+        <input class="panel-title-input" type="text" placeholder="제목 없음" maxlength="80" />
+        <button class="save-btn">저장</button>
+      </div>
+      <div class="editor-wrap">
+        <div class="gutter"><div class="gutter-inner"></div></div>
+        <div class="memo-editor" contenteditable="true" spellcheck="false"
+             data-placeholder="메모를 선택하세요..."></div>
+      </div>
+      <div class="panel-bottom"><span class="charcount">0자</span></div>
+    `;
+
+    const titleInput = wrap.querySelector(".panel-title-input");
+    const saveBtn    = wrap.querySelector(".save-btn");
+    const gutter     = wrap.querySelector(".gutter");
+    const editor     = wrap.querySelector(".memo-editor");
+    const charcount  = wrap.querySelector(".charcount");
+
+    const pState = { memoId: null, editorEl: editor, titleEl: titleInput, gutterEl: gutter };
+    panels[panelIdx] = pState;
+
+    saveBtn.addEventListener("click", () => savePanel(panelIdx));
+
+    editor.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
         e.preventDefault();
-        save();
+        document.execCommand("insertParagraph");
+        requestAnimationFrame(() => renderGutter(panelIdx));
       }
-    }
-
-    // ── 메모 선택 ──
-    function selectMemo(id) {
-      currentId = id;
-      if (!editorEl) mountEditor();
-      const m = memos[id] || {};
-      titleEl.value  = m.title   || "";
-      editorEl.value = m.content || "";
-      document.getElementById("charcount").textContent = (m.content || "").length + "자";
-      renderGutter();
-      renderList();
-      editorEl.focus();
-    }
-
-    // ── 저장 ──
-    function save() {
-      if (!currentId) return;
-      const saveBtn = document.getElementById("save-btn");
-      if (!saveBtn) return;
-      saveBtn.disabled = true;
-      saveBtn.textContent = "저장 중...";
-      const title   = titleEl.value.trim() || "제목 없음";
-      const content = editorEl.value;
-      set(ref(db, `memos/${currentId}`), { title, content })
-        .then(() => {
-          statusEl.textContent = "✅ " + new Date().toLocaleTimeString();
-          saveBtn.textContent = "저장";
-          saveBtn.disabled = false;
-        })
-        .catch((e) => {
-          statusEl.textContent = "❌ " + e.message;
-          saveBtn.textContent = "저장";
-          saveBtn.disabled = false;
-        });
-    }
-
-    // ── 새 메모 ──
-    newBtn.addEventListener("click", () => {
-      const newRef = push(memosRef);
-      set(newRef, { title: "새 메모", content: "" }).then(() => {
-        selectMemo(newRef.key);
-      });
     });
 
-    // ── 삭제 ──
-    function deleteMemo(id) {
-      if (!confirm("이 메모를 삭제할까요?")) return;
-      remove(ref(db, `memos/${id}`)).then(() => {
-        if (currentId === id) {
-          document.removeEventListener("keydown", globalSave);
-          currentId = null; editorEl = null; titleEl = null; gutterEl = null;
-          mainDiv.innerHTML = '<div id="empty-state" style="flex:1;display:flex;align-items:center;justify-content:center;color:#bbb;font-size:15px;">← 메모를 선택하거나 새로 만드세요</div>';
-        }
-      });
-    }
-
-    // ── 목록 렌더링 ──
-    function renderList() {
-      memoListEl.innerHTML = "";
-      const ids = Object.keys(memos);
-      if (ids.length === 0) {
-        memoListEl.innerHTML = '<div style="padding:12px 14px;color:#555;font-size:12px;">메모 없음</div>';
-        return;
-      }
-      ids.forEach(id => {
-        const m    = memos[id];
-        const item = document.createElement("div");
-        item.className = "memo-item" + (id === currentId ? " active" : "");
-        const titleSpan = document.createElement("span");
-        titleSpan.className   = "memo-item-title";
-        titleSpan.textContent = m.title || "제목 없음";
-        const delBtn = document.createElement("button");
-        delBtn.className   = "delete-btn";
-        delBtn.textContent = "×";
-        delBtn.addEventListener("click", (e) => { e.stopPropagation(); deleteMemo(id); });
-        item.appendChild(titleSpan);
-        item.appendChild(delBtn);
-        item.addEventListener("click", () => selectMemo(id));
-        memoListEl.appendChild(item);
-      });
-    }
-
-    // ── Firebase 실시간 동기화 ──
-    onValue(memosRef, (snapshot) => {
-      memos = snapshot.val() || {};
-      statusEl.textContent = "✅ 연결됨";
-      renderList();
-      if (currentId && memos[currentId] && editorEl) {
-        if (document.activeElement !== editorEl && document.activeElement !== titleEl) {
-          titleEl.value  = memos[currentId].title   || "";
-          editorEl.value = memos[currentId].content || "";
-          renderGutter();
-        }
-      }
-    }, (error) => {
-      statusEl.textContent = "❌ " + error.message;
+    editor.addEventListener("input", () => {
+      charcount.textContent = htmlToText(editor).length + "자";
+      requestAnimationFrame(() => renderGutter(panelIdx));
     });
-  </script>
+
+    // 스크롤 동기화: gutter-inner를 translateY로 에디터 스크롤에 맞춤
+    editor.addEventListener("scroll", () => {
+      const inner = gutter.querySelector(".gutter-inner");
+      if (inner) inner.style.transform = `translateY(-${editor.scrollTop}px)`;
+    });
+
+    const ro = new ResizeObserver(() => requestAnimationFrame(() => renderGutter(panelIdx)));
+    ro.observe(editor);
+
+    return wrap;
+  }
+
+  function loadMemoInPanel(panelIdx, memoId) {
+    const p = panels[panelIdx];
+    if (!p) return;
+    p.memoId = memoId;
+    const m = memos[memoId] || {};
+    p.titleEl.value      = m.title   || "";
+    p.editorEl.innerHTML = textToHtml(m.content || "");
+    p.editorEl.setAttribute("data-placeholder", "여기에 메모를 입력하세요...");
+    requestAnimationFrame(() => renderGutter(panelIdx));
+    renderList();
+  }
+
+  function savePanel(panelIdx) {
+    const p = panels[panelIdx];
+    if (!p || !p.memoId) return;
+    const panelEl = panelsEl.children[splitOn ? panelIdx * 2 : 0];
+    const saveBtn = panelEl ? panelEl.querySelector(".save-btn") : null;
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "저장 중..."; }
+    const title   = p.titleEl.value.trim() || "제목 없음";
+    const content = htmlToText(p.editorEl);
+    set(ref(db, `memos/${p.memoId}`), { title, content })
+      .then(() => {
+        statusEl.textContent = "✅ " + new Date().toLocaleTimeString();
+        if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
+      })
+      .catch((e) => {
+        statusEl.textContent = "❌ " + e.message;
+        if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
+      });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+      e.preventDefault();
+      panels.forEach((p, i) => {
+        if (p && (document.activeElement === p.editorEl || document.activeElement === p.titleEl))
+          savePanel(i);
+      });
+      const anyFocused = panels.some(p => p && (document.activeElement === p.editorEl || document.activeElement === p.titleEl));
+      if (!anyFocused && panels[0] && panels[0].memoId) savePanel(0);
+    }
+  });
+
+  splitToggle.addEventListener("click", () => {
+    splitOn = !splitOn;
+    splitToggle.textContent = splitOn ? "⊞ 분할화면 ON" : "⊟ 분할화면";
+    splitToggle.classList.toggle("on", splitOn);
+    rebuildPanels();
+  });
+
+  function rebuildPanels() {
+    const id0 = panels[0] ? panels[0].memoId : null;
+    const id1 = panels[1] ? panels[1].memoId : null;
+    panels = [];
+    panelsEl.innerHTML = "";
+
+    const p0El = createPanelEl(0);
+    panelsEl.appendChild(p0El);
+
+    if (splitOn) {
+      const div = document.createElement("div");
+      div.className = "divider";
+      panelsEl.appendChild(div);
+
+      const p1El = createPanelEl(1);
+      panelsEl.appendChild(p1El);
+
+      let dragging = false;
+      div.addEventListener("mousedown", (e) => { dragging = true; div.classList.add("dragging"); e.preventDefault(); });
+      document.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        const rect = panelsEl.getBoundingClientRect();
+        let pct = ((e.clientX - rect.left) / rect.width) * 100;
+        pct = Math.min(Math.max(pct, 20), 80);
+        p0El.style.flex = "none";
+        p0El.style.width = pct + "%";
+        p1El.style.flex = "1";
+      });
+      document.addEventListener("mouseup", () => { dragging = false; div.classList.remove("dragging"); });
+
+      if (id1) loadMemoInPanel(1, id1);
+    }
+
+    if (id0) loadMemoInPanel(0, id0);
+    renderList();
+  }
+
+  function sidebarClickMemo(memoId) {
+    if (!splitOn) {
+      loadMemoInPanel(0, memoId);
+    } else {
+      if (panels[0] && panels[0].memoId === memoId) loadMemoInPanel(1, memoId);
+      else loadMemoInPanel(0, memoId);
+    }
+  }
+
+  function renderList() {
+    memoListEl.innerHTML = "";
+    const ids = Object.keys(memos);
+    if (ids.length === 0) {
+      memoListEl.innerHTML = '<div style="padding:10px 14px;color:#555;font-size:11px;">메모 없음</div>';
+      return;
+    }
+    const id0 = panels[0] ? panels[0].memoId : null;
+    const id1 = panels[1] ? panels[1].memoId : null;
+    ids.forEach(id => {
+      const m = memos[id];
+      const item = document.createElement("div");
+      const inMain = id === id0, inSub = id === id1;
+      item.className = "memo-item" + (inMain && inSub ? " active-both" : inMain ? " active-main" : inSub ? " active-sub" : "");
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "memo-item-title";
+      titleSpan.textContent = m.title || "제목 없음";
+      const delBtn = document.createElement("button");
+      delBtn.className = "delete-btn";
+      delBtn.textContent = "×";
+      delBtn.addEventListener("click", (e) => { e.stopPropagation(); deleteMemo(id); });
+      item.appendChild(titleSpan);
+      item.appendChild(delBtn);
+      item.addEventListener("click", () => sidebarClickMemo(id));
+      memoListEl.appendChild(item);
+    });
+  }
+
+  newBtn.addEventListener("click", () => {
+    const newRef = push(memosRef);
+    set(newRef, { title: "새 메모", content: "" }).then(() => loadMemoInPanel(0, newRef.key));
+  });
+
+  function deleteMemo(id) {
+    if (!confirm("이 메모를 삭제할까요?")) return;
+    remove(ref(db, `memos/${id}`));
+  }
+
+  onValue(memosRef, (snapshot) => {
+    memos = snapshot.val() || {};
+    statusEl.textContent = "✅ 연결됨";
+    renderList();
+  }, (e) => { statusEl.textContent = "❌ " + e.message; });
+
+  rebuildPanels();
+</script>
 </body>
 </html>
