@@ -247,6 +247,32 @@
 </head>
 <body>
 
+<!-- 비밀번호 화면 -->
+<div id="lock-screen" style="
+  position: fixed; inset: 0;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  gap: 16px;
+">
+  <div style="color: #777; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-family: 'Noto Sans KR', sans-serif;">MEMOS</div>
+  <input id="pw-input" type="password" placeholder="비밀번호 입력" style="
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #eee;
+    padding: 10px 16px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    outline: none;
+    width: 220px;
+    text-align: center;
+  " />
+  <div id="pw-error" style="color: #e03131; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; height: 16px;"></div>
+</div>
+
 <div id="sidebar">
   <div id="sidebar-header">MEMOS</div>
   <button id="new-btn">+ 새 메모</button>
@@ -271,6 +297,28 @@
     appId:             "1:116520806995:web:abbafb950052296db8b4a6",
     measurementId:     "G-9H3GX7SWKG"
   };
+
+  // ── 비밀번호 체크 ──
+  const lockScreen = document.getElementById("lock-screen");
+  const pwInput    = document.getElementById("pw-input");
+  const pwError    = document.getElementById("pw-error");
+  const PASSWORD   = "rnjsdyddn";
+
+  pwInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      if (pwInput.value === PASSWORD) {
+        lockScreen.style.display = "none";
+        pwInput.value = "";
+      } else {
+        pwError.textContent = "비밀번호가 틀렸습니다.";
+        pwInput.value = "";
+        setTimeout(() => { pwError.textContent = ""; }, 2000);
+      }
+    }
+  });
+
+  // 포커스
+  setTimeout(() => pwInput.focus(), 100);
 
   const app      = initializeApp(firebaseConfig);
   const db       = getDatabase(app);
