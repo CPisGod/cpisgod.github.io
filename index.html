@@ -269,12 +269,21 @@
     .panel-bottom {
       display: flex;
       justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
       padding: 5px 16px;
       font-size: 11px;
       color: #aaa;
       background: var(--bg-main);
       border-top: 1px solid var(--border-light);
       flex-shrink: 0;
+    }
+    .selcount { color: #8fa; }
+    .selcount:empty { display: none; }
+
+    .memo-editor.font-consolas,
+    .memo-editor.font-consolas p {
+      font-family: 'Consolas', 'D2Coding', monospace;
     }
 
     /* ── 모바일 최적화 ── */
@@ -529,7 +538,7 @@
         <div class="memo-editor" contenteditable="true" spellcheck="false"
              data-placeholder="메모를 선택하세요..."></div>
       </div>
-      <div class="panel-bottom"><span class="charcount">0자</span></div>
+      <div class="panel-bottom"><span class="selcount"></span><span class="charcount">0자</span></div>
     `;
 
     const titleInput = wrap.querySelector(".panel-title-input");
@@ -537,11 +546,14 @@
     const gutter     = wrap.querySelector(".gutter");
     const editor     = wrap.querySelector(".memo-editor");
     const charcount  = wrap.querySelector(".charcount");
+    const selcount   = wrap.querySelector(".selcount");
 
-    const pState = { memoId: null, editorEl: editor, titleEl: titleInput, gutterEl: gutter };
+    const pState = { memoId: null, editorEl: editor, titleEl: titleInput, gutterEl: gutter, selCountEl: selcount, dirty: false };
     panels[panelIdx] = pState;
 
     saveBtn.addEventListener("click", () => savePanel(panelIdx));
+
+    titleInput.addEventListener("input", () => { pState.dirty = true; });
 
     editor.addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
@@ -553,6 +565,7 @@
 
     editor.addEventListener("input", () => {
       charcount.textContent = htmlToText(editor).length + "자";
+      pState.dirty = true;
       requestAnimationFrame(() => renderGutter(panelIdx));
     });
 
@@ -584,6 +597,10 @@
     p.titleEl.value      = m.title   || "";
     p.editorEl.innerHTML = textToHtml(m.content || "");
     p.editorEl.setAttribute("data-placeholder", "여기에 메모를 입력하세요...");
+    p.dirty = false;
+    const panelEl = panelsEl.children[splitOn ? panelIdx * 2 : 0];
+    const charcountEl = panelEl ? panelEl.querySelector(".charcount") : null;
+    if (charcountEl) charcountEl.textContent = htmlToText(p.editorEl).length + "자";
     // pins 로드
     const savedPins = m.pins ? new Set(m.pins) : new Set();
     pins[memoId] = savedPins;
@@ -591,7 +608,7 @@
     renderList();
   }
 
-  function savePanel(panelIdx) {
+  function savePanel(panelIdx, isAuto = false) {
     const p = panels[panelIdx];
     if (!p || !p.memoId) return;
     const panelEl = panelsEl.children[splitOn ? panelIdx * 2 : 0];
@@ -602,7 +619,8 @@
     const pinArr  = p.memoId && pins[p.memoId] ? Array.from(pins[p.memoId]) : [];
     set(ref(db, `memos/${p.memoId}`), { title, content, pins: pinArr })
       .then(() => {
-        statusEl.textContent = "✅ " + new Date().toLocaleTimeString();
+        p.dirty = false;
+        statusEl.textContent = (isAuto ? "💾 자동저장 " : "✅ ") + new Date().toLocaleTimeString();
         if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
       })
       .catch((e) => {
@@ -610,6 +628,13 @@
         if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
       });
   }
+
+  // ── 1분마다 자동저장 (변경된 패널만) ──
+  setInterval(() => {
+    panels.forEach((p, i) => {
+      if (p && p.memoId && p.dirty) savePanel(i, true);
+    });
+  }, 60000);
 
   document.addEventListener("keydown", (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -621,7 +646,32 @@
       const anyFocused = panels.some(p => p && (document.activeElement === p.editorEl || document.activeElement === p.titleEl));
       if (!anyFocused && panels[0] && panels[0].memoId) savePanel(0);
     }
+
+    // Ctrl(Cmd) + Alt + C: 포커스된 에디터 글꼴 Consolas 전환/해제
+    if ((e.ctrlKey || e.metaKey) && e.altKey && e.key.toLowerCase() === "c") {
+      e.preventDefault();
+      let target = panels.find(p => p && document.activeElement === p.editorEl);
+      if (!target) target = panels[0];
+      if (target && target.editorEl) target.editorEl.classList.toggle("font-consolas");
+    }
   });
+
+  // ── 드래그 선택된 글자수 표시 ──
+  function updateSelectionCounts() {
+    const sel = (window.getSelection && window.getSelection()) || null;
+    panels.forEach((p) => {
+      if (!p || !p.selCountEl) return;
+      let len = 0;
+      if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+        const range = sel.getRangeAt(0);
+        if (p.editorEl.contains(range.commonAncestorContainer)) {
+          len = sel.toString().length;
+        }
+      }
+      p.selCountEl.textContent = len > 0 ? `선택 ${len}자 · ` : "";
+    });
+  }
+  document.addEventListener("selectionchange", updateSelectionCounts);
 
   splitToggle.addEventListener("click", () => {
     splitOn = !splitOn;
