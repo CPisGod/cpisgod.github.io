@@ -285,6 +285,71 @@
       font-family: 'Consolas', 'D2Coding', monospace;
     }
 
+    /* ── 문서 뷰어 (PDF / DOCX / HWPX) ── */
+    .doc-btn {
+      background: transparent;
+      color: var(--text-main);
+      border: 1px solid var(--border-light);
+      padding: 6px 10px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .doc-btn:hover { background: var(--gutter-bg); }
+    .panel.doc-open .editor-wrap,
+    .panel.doc-open .panel-bottom { display: none; }
+    .panel.drag-over { outline: 3px dashed #5a9a5a; outline-offset: -3px; }
+    .doc-view {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      background: var(--bg-preview);
+      min-height: 0;
+    }
+    .panel.doc-open .doc-view { display: flex; }
+    .doc-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 16px;
+      font-size: 12px;
+      background: var(--bg-main);
+      color: var(--text-main);
+      border-bottom: 1px solid var(--border-light);
+      flex-shrink: 0;
+    }
+    .doc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .doc-close {
+      background: #333; color: #fff; border: none;
+      padding: 4px 12px; font-size: 12px; cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif; flex-shrink: 0;
+    }
+    .doc-close:hover { background: #000; }
+    .doc-body { flex: 1; overflow: auto; padding: 16px; }
+    .doc-msg { color: #888; font-size: 13px; padding: 20px; text-align: center; }
+    .doc-pdf canvas {
+      display: block; max-width: 100%; height: auto !important;
+      margin: 0 auto 12px; background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
+    .doc-page {
+      background: #fff; color: #222;
+      max-width: 820px; margin: 0 auto; padding: 32px 36px;
+      box-shadow: 0 1px 4px rgba(0,0,0,.3);
+      font-family: 'Noto Serif KR', serif; font-size: 15px; line-height: 1.8;
+      word-break: break-word; overflow-x: auto;
+    }
+    .doc-page p { min-height: 1.2em; margin: 0 0 .3em; }
+    .doc-page img { max-width: 100%; height: auto; }
+    .doc-page table { border-collapse: collapse; margin: 8px 0; max-width: 100%; }
+    .doc-page td, .doc-page th { border: 1px solid #999; padding: 4px 8px; vertical-align: top; }
+    .doc-page h1, .doc-page h2, .doc-page h3 { margin: .8em 0 .4em; }
+    .doc-page ul, .doc-page ol { margin: .4em 0 .4em 1.6em; }
+
     /* ── 모바일 최적화 ── */
     @media (max-width: 768px) {
       body { flex-direction: column; }
@@ -530,7 +595,13 @@
     wrap.innerHTML = `
       <div class="panel-header">
         <input class="panel-title-input" type="text" placeholder="제목 없음" maxlength="80" />
+        <button class="doc-btn" title="PDF / DOCX / HWPX 문서 열기">📄 문서</button>
+        <input class="doc-file" type="file" accept=".pdf,.docx,.hwpx" hidden />
         <button class="save-btn">저장</button>
+      </div>
+      <div class="doc-view">
+        <div class="doc-bar"><span class="doc-name"></span><button class="doc-close">✕ 닫고 메모로</button></div>
+        <div class="doc-body"></div>
       </div>
       <div class="editor-wrap">
         <div class="gutter"><div class="gutter-inner"></div></div>
@@ -547,8 +618,35 @@
     const charcount  = wrap.querySelector(".charcount");
     const selcount   = wrap.querySelector(".selcount");
 
-    const pState = { memoId: null, editorEl: editor, titleEl: titleInput, gutterEl: gutter, selCountEl: selcount, dirty: false };
+    const pState = { memoId: null, editorEl: editor, titleEl: titleInput, gutterEl: gutter, selCountEl: selcount, dirty: false,
+                     panelEl: wrap, docFile: null, docToken: 0 };
     panels[panelIdx] = pState;
+
+    // 문서 열기: 버튼 / 드래그앤드롭
+    const docBtn   = wrap.querySelector(".doc-btn");
+    const docInput = wrap.querySelector(".doc-file");
+    docBtn.addEventListener("click", () => docInput.click());
+    docInput.addEventListener("change", () => {
+      if (docInput.files[0]) openDoc(panelIdx, docInput.files[0]);
+      docInput.value = "";
+    });
+    wrap.querySelector(".doc-close").addEventListener("click", () => closeDoc(panelIdx));
+    wrap.addEventListener("dragover", (e) => {
+      if (e.dataTransfer && Array.from(e.dataTransfer.types).includes("Files")) {
+        e.preventDefault();
+        wrap.classList.add("drag-over");
+      }
+    });
+    wrap.addEventListener("dragleave", (e) => {
+      if (!wrap.contains(e.relatedTarget)) wrap.classList.remove("drag-over");
+    });
+    wrap.addEventListener("drop", (e) => {
+      wrap.classList.remove("drag-over");
+      const f = e.dataTransfer && e.dataTransfer.files[0];
+      if (!f) return;
+      e.preventDefault();
+      openDoc(panelIdx, f);
+    });
 
     saveBtn.addEventListener("click", () => savePanel(panelIdx));
 
@@ -588,6 +686,151 @@
     ro.observe(editor);
 
     return wrap;
+  }
+
+  // ── 문서 뷰어 (PDF / DOCX / HWPX) ──
+  // 라이브러리는 문서를 처음 열 때 한 번만 지연 로드한다.
+  const libCache = {};
+  function loadScript(src) {
+    if (!libCache[src]) {
+      libCache[src] = new Promise((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = () => { delete libCache[src]; reject(new Error("라이브러리 로드 실패: " + src)); };
+        document.head.appendChild(s);
+      });
+    }
+    return libCache[src];
+  }
+  const CDN = "https://cdnjs.cloudflare.com/ajax/libs/";
+  const PDFJS_BASE = CDN + "pdf.js/3.11.174/";
+
+  async function renderPdf(buf, body) {
+    await loadScript(PDFJS_BASE + "pdf.min.js");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + "pdf.worker.min.js";
+    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    const wrap = document.createElement("div");
+    wrap.className = "doc-pdf";
+    body.innerHTML = "";
+    body.appendChild(wrap);
+    const targetW = Math.max(body.clientWidth - 32, 400);
+    const dpr = window.devicePixelRatio || 1;
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const page = await pdf.getPage(n);
+      const base = page.getViewport({ scale: 1 });
+      const vp = page.getViewport({ scale: (targetW / base.width) * dpr });
+      const canvas = document.createElement("canvas");
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      canvas.style.width = (vp.width / dpr) + "px";
+      wrap.appendChild(canvas);
+      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+    }
+  }
+
+  async function renderDocx(buf, body) {
+    await loadScript(CDN + "mammoth/1.6.0/mammoth.browser.min.js");
+    const result = await mammoth.convertToHtml({ arrayBuffer: buf });
+    body.innerHTML = '<div class="doc-page"></div>';
+    body.firstChild.innerHTML = result.value || '<p class="doc-msg">내용이 없습니다.</p>';
+  }
+
+  // HWPX = ZIP + XML. 문단(p), 표(tbl), 줄바꿈만 추출해 간이 렌더링한다. (이미지/도형은 제외)
+  async function renderHwpx(buf, body) {
+    await loadScript(CDN + "jszip/3.10.1/jszip.min.js");
+    const zip = await JSZip.loadAsync(buf);
+    const names = Object.keys(zip.files)
+      .filter(n => /^Contents\/section\d+\.xml$/i.test(n))
+      .sort((a, b) => parseInt(a.match(/\d+/)[0], 10) - parseInt(b.match(/\d+/)[0], 10));
+    if (!names.length) throw new Error("HWPX 본문(section)을 찾을 수 없습니다.");
+
+    const page = document.createElement("div");
+    page.className = "doc-page";
+    const kids = (el, name) => Array.from(el.children).filter(c => c.localName === name);
+
+    function walkP(pEl, out) {
+      let p = document.createElement("p");
+      out.appendChild(p);
+      (function rec(n) {
+        for (const c of n.children) {
+          const ln = c.localName;
+          if (ln === "t") p.appendChild(document.createTextNode(c.textContent));
+          else if (ln === "tbl") { out.appendChild(buildTbl(c)); p = document.createElement("p"); out.appendChild(p); }
+          else if (ln === "lineBreak") p.appendChild(document.createElement("br"));
+          else if (ln === "tab") p.appendChild(document.createTextNode("\u2003"));
+          else if (ln === "header" || ln === "footer") continue;
+          else rec(c);
+        }
+      })(pEl);
+    }
+    function buildTbl(tbl) {
+      const table = document.createElement("table");
+      for (const tr of kids(tbl, "tr")) {
+        const row = table.insertRow();
+        for (const tc of kids(tr, "tc")) {
+          const td = row.insertCell();
+          const span = kids(tc, "cellSpan")[0];
+          if (span) {
+            const cs = parseInt(span.getAttribute("colSpan"), 10), rs = parseInt(span.getAttribute("rowSpan"), 10);
+            if (cs > 1) td.colSpan = cs;
+            if (rs > 1) td.rowSpan = rs;
+          }
+          const sub = kids(tc, "subList")[0];
+          if (sub) kids(sub, "p").forEach(p => walkP(p, td));
+        }
+      }
+      return table;
+    }
+
+    for (const name of names) {
+      const xml = new DOMParser().parseFromString(await zip.file(name).async("string"), "application/xml");
+      if (xml.querySelector("parsererror")) throw new Error("HWPX XML 해석 실패");
+      kids(xml.documentElement, "p").forEach(p => walkP(p, page));
+    }
+    body.innerHTML = "";
+    body.appendChild(page);
+  }
+
+  async function openDoc(panelIdx, file) {
+    const p = panels[panelIdx];
+    if (!p || !file) return;
+    const ext = (file.name.split(".").pop() || "").toLowerCase();
+    const renderer = { pdf: renderPdf, docx: renderDocx, hwpx: renderHwpx }[ext];
+    if (!renderer) {
+      alert(ext === "hwp" || ext === "doc"
+        ? `.${ext} (구형 바이너리 포맷)은 지원하지 않습니다. ${ext === "hwp" ? "한글에서 .hwpx" : "Word에서 .docx"}로 저장 후 열어주세요.`
+        : "PDF, DOCX, HWPX 파일만 열 수 있습니다.");
+      return;
+    }
+    const token = ++p.docToken;
+    p.docFile = file;
+    p.panelEl.classList.add("doc-open");
+    p.panelEl.querySelector(".doc-name").textContent = "📄 " + file.name;
+    const body = p.panelEl.querySelector(".doc-body");
+    body.innerHTML = '<div class="doc-msg">⏳ 문서를 불러오는 중...</div>';
+    try {
+      const buf = await file.arrayBuffer();
+      if (token !== p.docToken) return;  // 그 사이 다른 문서를 열었거나 닫힘
+      await renderer(buf, body);
+    } catch (e) {
+      if (token !== p.docToken) return;
+      body.innerHTML = "";
+      const msg = document.createElement("div");
+      msg.className = "doc-msg";
+      msg.textContent = "❌ 문서를 열 수 없습니다: " + e.message;
+      body.appendChild(msg);
+    }
+  }
+
+  function closeDoc(panelIdx) {
+    const p = panels[panelIdx];
+    if (!p) return;
+    p.docToken++;
+    p.docFile = null;
+    p.panelEl.classList.remove("doc-open");
+    p.panelEl.querySelector(".doc-body").innerHTML = "";
+    requestAnimationFrame(() => renderGutter(panelIdx));
   }
 
   function loadMemoInPanel(panelIdx, memoId) {
@@ -684,6 +927,8 @@
   function rebuildPanels() {
     const id0 = panels[0] ? panels[0].memoId : null;
     const id1 = panels[1] ? panels[1].memoId : null;
+    const doc0 = panels[0] ? panels[0].docFile : null;
+    const doc1 = panels[1] ? panels[1].docFile : null;
     panels = [];
     panelsEl.innerHTML = "";
 
@@ -715,6 +960,8 @@
     }
 
     if (id0) loadMemoInPanel(0, id0);
+    if (doc0) openDoc(0, doc0);
+    if (splitOn && doc1) openDoc(1, doc1);
     renderList();
   }
 
