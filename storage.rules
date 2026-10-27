@@ -1,11 +1,11 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // 이 앱은 Firebase Auth 없이 클라이언트 비밀번호만 사용하므로 docs/ 경로만 공개 읽기/쓰기.
-    // 파일 크기는 50MB로 제한. 민감한 문서는 올리지 마세요.
+    // YOUR_UID 를 Firebase 콘솔 > Authentication > 사용자 의 UID 로 교체하세요.
     match /docs/{file} {
-      allow read: if true;
-      allow write: if request.resource == null || request.resource.size < 50 * 1024 * 1024;
+      allow read: if request.auth != null && request.auth.uid == 'YOUR_UID';
+      allow write: if request.auth != null && request.auth.uid == 'YOUR_UID'
+                   && (request.resource == null || request.resource.size < 50 * 1024 * 1024);
     }
   }
 }

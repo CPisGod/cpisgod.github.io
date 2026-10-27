@@ -391,7 +391,7 @@
         transform: rotate(-90deg);
       }
 
-      #new-btn, #split-toggle, #theme-toggle {
+      #new-btn, #split-toggle, #theme-toggle, #logout-btn {
         margin: 6px 10px;
         padding: 10px 0;
         font-size: 13px;
@@ -439,7 +439,18 @@
   gap: 16px;
 ">
   <div style="color: #777; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; font-family: 'Noto Sans KR', sans-serif;">MEMOS</div>
-  <input id="pw-input" type="password" placeholder="비밀번호 입력" style="
+  <input id="email-input" type="email" placeholder="이메일" autocomplete="username" style="
+    background: #2a2a2a;
+    border: 1px solid #444;
+    color: #eee;
+    padding: 10px 16px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    outline: none;
+    width: 220px;
+    text-align: center;
+  " />
+  <input id="pw-input" type="password" placeholder="비밀번호" autocomplete="current-password" style="
     background: #2a2a2a;
     border: 1px solid #444;
     color: #eee;
@@ -458,10 +469,11 @@
   <button id="new-btn">+ 새 메모</button>
   <button id="split-toggle">⊟ 분할화면</button>
   <button id="theme-toggle">🌙 다크모드</button>
+  <button id="logout-btn" style="margin:0 10px 10px;background:#2a2a2a;color:#888;border:1px solid #3a3a3a;padding:6px 0;font-family:'Noto Sans KR',sans-serif;font-size:11px;cursor:pointer;width:calc(100% - 20px);">로그아웃</button>
   <div id="memo-list"></div>
   <div id="doc-header">DOCS</div>
   <div id="doc-list"></div>
-  <div id="status">⏳ 연결 중...</div>
+  <div id="status">🔒 로그인 필요</div>
 </div>
 
 <div id="panels"></div>
@@ -469,6 +481,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref as sRef, uploadBytesResumable, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const firebaseConfig = {
@@ -482,27 +495,35 @@
     measurementId:     "G-9H3GX7SWKG"
   };
 
-  // ── 비밀번호 체크 ──
+  const app = initializeApp(firebaseConfig);
+
+  // ── 로그인 (Firebase Auth 이메일/비밀번호) ──
   const lockScreen = document.getElementById("lock-screen");
+  const emailInput = document.getElementById("email-input");
   const pwInput    = document.getElementById("pw-input");
   const pwError    = document.getElementById("pw-error");
-  const PASSWORD   = "rnjsdyddn";
+  const auth       = getAuth(app);
 
-  pwInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      if (pwInput.value === PASSWORD) {
-        lockScreen.style.display = "none";
-        pwInput.value = "";
-      } else {
-        pwError.textContent = "비밀번호가 틀렸습니다.";
-        pwInput.value = "";
-        setTimeout(() => { pwError.textContent = ""; }, 2000);
-      }
+  function showLoginError(msg) {
+    pwError.textContent = msg;
+    setTimeout(() => { pwError.textContent = ""; }, 3000);
+  }
+  async function doLogin() {
+    const email = emailInput.value.trim(), pw = pwInput.value;
+    if (!email || !pw) return;
+    pwError.textContent = "로그인 중...";
+    try {
+      await signInWithEmailAndPassword(auth, email, pw);
+      pwInput.value = "";
+    } catch (e) {
+      pwInput.value = "";
+      showLoginError(e.code === "auth/too-many-requests"
+        ? "시도가 너무 많습니다. 잠시 후 다시 시도하세요."
+        : "이메일 또는 비밀번호가 틀렸습니다.");
     }
-  });
-
-  // 포커스
-  setTimeout(() => pwInput.focus(), 100);
+  }
+  [emailInput, pwInput].forEach(el => el.addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); }));
+  setTimeout(() => emailInput.focus(), 100);
 
   // ── 모바일 사이드바 접기/펼치기 ──
   const sidebarHeader = document.getElementById("sidebar-header");
@@ -523,7 +544,6 @@
     applyTheme(!document.documentElement.classList.contains("dark"));
   });
 
-  const app      = initializeApp(firebaseConfig);
   const db       = getDatabase(app);
   const memosRef = ref(db, "memos");
   const docsRef  = ref(db, "docs");
@@ -1119,7 +1139,9 @@
     remove(ref(db, `memos/${id}`));
   }
 
-  onValue(memosRef, (snapshot) => {
+  const unsubs = [];
+  function startSync() {
+  unsubs.push(onValue(memosRef, (snapshot) => {
     memos = snapshot.val() || {};
     statusEl.textContent = "✅ 연결됨";
     // 열려있는 패널의 pins 갱신
@@ -1130,11 +1152,13 @@
       }
     });
     renderList();
-  }, (e) => { statusEl.textContent = "❌ " + e.message; });
+  }, (e) => { statusEl.textContent = "❌ " + e.message; }));
+  }
 
   // ── 문서 목록 구독 + 새로고침 시 열려있던 문서 복원 ──
   let docsRestored = false;
-  onValue(docsRef, (snapshot) => {
+  function startDocSync() {
+  unsubs.push(onValue(docsRef, (snapshot) => {
     docs = snapshot.val() || {};
     renderDocList();
     if (docsRestored) return;
@@ -1146,7 +1170,25 @@
     if (saved.split && !splitOn) setSplit(true);
     if (id0) openDoc(0, id0);
     if (splitOn && id1) openDoc(1, id1);
-  }, (e) => { statusEl.textContent = "❌ " + e.message; });
+  }, (e) => { statusEl.textContent = "❌ " + e.message; }));
+  }
+
+  // ── 인증 상태에 따라 잠금/구독 ──
+  document.getElementById("logout-btn").addEventListener("click", async () => {
+    await signOut(auth);
+    location.reload();  // 메모리의 데이터까지 깨끗이 비움
+  });
+  let synced = false;
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      lockScreen.style.display = "none";
+      if (!synced) { synced = true; startSync(); startDocSync(); }
+    } else {
+      lockScreen.style.display = "flex";
+      statusEl.textContent = "🔒 로그인 필요";
+      emailInput.focus();
+    }
+  });
 
   rebuildPanels();
 </script>
