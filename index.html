@@ -101,6 +101,12 @@
       border-top: 1px solid #333; border-bottom: 1px solid #2e2e2e;
     }
     #doc-list { max-height: 28vh; overflow-y: auto; }
+    #usage { padding: 8px 14px 4px; font-size: 10px; color: #888; border-top: 1px solid #2a2a2a; }
+    #usage .u-row { display: flex; justify-content: space-between; margin-top: 4px; }
+    #usage .u-bar { height: 3px; background: #333; margin-top: 2px; }
+    #usage .u-fill { height: 100%; background: #5a9a5a; }
+    #usage .u-fill.warn { background: #d9a441; }
+    #usage .u-fill.over { background: #e03131; }
     .doc-item.active { background: #3a2d2d; color: #bc8f8f; }
     .memo-item {
       display: flex;
@@ -473,6 +479,7 @@
   <div id="memo-list"></div>
   <div id="doc-header">DOCS</div>
   <div id="doc-list"></div>
+  <div id="usage"></div>
   <div id="status">🔒 로그인 필요</div>
 </div>
 
@@ -480,7 +487,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, onValue, set, remove, push, update, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref as sRef, uploadBytesResumable, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -555,6 +562,7 @@
   const newBtn      = document.getElementById("new-btn");
   const splitToggle = document.getElementById("split-toggle");
   const docListEl   = document.getElementById("doc-list");
+  const usageEl     = document.getElementById("usage");
 
   let memos   = {};
   let docs    = {};          // RTDB에 저장된 문서 메타 { id: {name, path, size} }
@@ -828,6 +836,73 @@
     body.appendChild(page);
   }
 
+  let synced = false;
+
+  // ── 사용량 표시 (무료 한도: 저장 5GB / 일 다운로드 1GB) ──
+  const LIMIT_DOWN = 1 * 1024 ** 3;   // 하루 다운로드
+  const LIMIT_STORE = 5 * 1024 ** 3;  // 총 저장
+  let usageToday = 0;                 // 오늘 이 앱이 내려받은 바이트
+  let usageDay = null, usageUnsub = null;
+  // Storage 일일 할당량은 태평양시 자정 기준으로 초기화된다.
+  const dayKey = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Los_Angeles" }).format(new Date());
+  const fmtBytes = (n) => n >= 1024 ** 3 ? (n / 1024 ** 3).toFixed(2) + "GB"
+                        : n >= 1024 ** 2 ? (n / 1024 ** 2).toFixed(1) + "MB"
+                        : Math.ceil(n / 1024) + "KB";
+
+  function renderUsage() {
+    const stored = Object.values(docs).reduce((a, d) => a + (d.size || 0), 0);
+    const row = (label, used, limit) => {
+      const pct = Math.min(used / limit * 100, 100);
+      const cls = used >= limit ? "over" : used >= limit * 0.8 ? "warn" : "";
+      return `<div class="u-row"><span>${label}</span><span>${fmtBytes(used)} / ${fmtBytes(limit)}</span></div>
+              <div class="u-bar"><div class="u-fill ${cls}" style="width:${pct}%"></div></div>`;
+    };
+    usageEl.innerHTML = row("오늘 다운로드", usageToday, LIMIT_DOWN) + row("저장 용량", stored, LIMIT_STORE);
+  }
+  function subscribeUsage() {
+    const day = dayKey();
+    if (day === usageDay) return;
+    if (usageUnsub) usageUnsub();
+    usageDay = day;
+    usageToday = 0;
+    usageUnsub = onValue(ref(db, `usage/${day}`), (snap) => {
+      usageToday = (snap.val() && snap.val().down) || 0;
+      renderUsage();
+    });
+    renderUsage();
+  }
+  setInterval(() => { if (synced) subscribeUsage(); }, 60000);  // 날짜가 바뀌면 새 날짜로 전환
+  function addDownloadUsage(bytes) {
+    usageToday += bytes;
+    renderUsage();
+    update(ref(db, `usage/${dayKey()}`), { down: increment(bytes) }).catch(() => {});
+  }
+
+  // 한 번 받은 문서는 브라우저 Cache API에 보관해 새로고침 때 재다운로드(=한도 소모)를 막는다.
+  async function cacheGet(id) {
+    try { const r = await (await caches.open("docs-v1")).match("/__doc/" + id); return r ? await r.arrayBuffer() : null; }
+    catch (e) { return null; }
+  }
+  async function cachePut(id, buf) {
+    try { await (await caches.open("docs-v1")).put("/__doc/" + id, new Response(buf.slice(0))); } catch (e) {}
+  }
+  async function cacheDelete(id) {
+    try { await (await caches.open("docs-v1")).delete("/__doc/" + id); } catch (e) {}
+  }
+  async function loadDocBuffer(id, d) {
+    let buf = docCache.get(id) || await cacheGet(id);
+    if (!buf) {
+      if (usageToday + (d.size || 0) > LIMIT_DOWN &&
+          !confirm(`오늘 다운로드가 무료 한도(1GB)를 넘을 수 있습니다. (현재 ${fmtBytes(usageToday)})\n그래도 불러올까요?`))
+        throw new Error("다운로드 한도 확인에서 취소됨");
+      buf = await getBytes(sRef(storage, d.path));
+      addDownloadUsage(buf.byteLength);
+      cachePut(id, buf);
+    }
+    docCache.set(id, buf);
+    return buf;
+  }
+
   const DOC_RENDERERS = { pdf: renderPdf, docx: renderDocx, hwpx: renderHwpx };
   const extOf = (name) => (name.split(".").pop() || "").toLowerCase();
 
@@ -861,6 +936,7 @@
       const newRef = push(docsRef);
       await set(newRef, { name: file.name, path, size: file.size, ts: Date.now() });
       docCache.set(newRef.key, buf);
+      cachePut(newRef.key, buf);
       docs[newRef.key] = { name: file.name, path, size: file.size };  // onValue 도착 전에도 바로 열 수 있게
       statusEl.textContent = "✅ 문서 저장됨 " + new Date().toLocaleTimeString();
       openDoc(panelIdx, newRef.key);
@@ -888,11 +964,7 @@
     saveDocState();
     renderDocList();
     try {
-      let buf = docCache.get(docId);
-      if (!buf) {
-        buf = await getBytes(sRef(storage, d.path));
-        docCache.set(docId, buf);
-      }
+      const buf = await loadDocBuffer(docId, d);
       if (token !== p.docToken) return;  // 그 사이 다른 문서를 열었거나 닫힘
       await renderer(buf.slice(0), body);
     } catch (e) {
@@ -928,6 +1000,7 @@
     if (!d || !confirm(`"${d.name}" 문서를 삭제할까요?`)) return;
     panels.forEach((p, i) => { if (p && p.docId === id) closeDoc(i); });
     docCache.delete(id);
+    cacheDelete(id);
     if (d.local) { delete localDocs[id]; renderDocList(); return; }
     try { await deleteObject(sRef(storage, d.path)); } catch (e) {}
     remove(ref(db, `docs/${id}`));
@@ -1161,6 +1234,7 @@
   unsubs.push(onValue(docsRef, (snapshot) => {
     docs = snapshot.val() || {};
     renderDocList();
+    renderUsage();
     if (docsRestored) return;
     docsRestored = true;
     let saved = null;
@@ -1173,16 +1247,17 @@
   }, (e) => { statusEl.textContent = "❌ " + e.message; }));
   }
 
+  rebuildPanels();
+
   // ── 인증 상태에 따라 잠금/구독 ──
   document.getElementById("logout-btn").addEventListener("click", async () => {
     await signOut(auth);
     location.reload();  // 메모리의 데이터까지 깨끗이 비움
   });
-  let synced = false;
   onAuthStateChanged(auth, (user) => {
     if (user) {
       lockScreen.style.display = "none";
-      if (!synced) { synced = true; startSync(); startDocSync(); }
+      if (!synced) { synced = true; startSync(); startDocSync(); subscribeUsage(); }
     } else {
       lockScreen.style.display = "flex";
       statusEl.textContent = "🔒 로그인 필요";
@@ -1190,7 +1265,6 @@
     }
   });
 
-  rebuildPanels();
 </script>
 </body>
 </html>
