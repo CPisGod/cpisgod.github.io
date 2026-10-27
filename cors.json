@@ -1,0 +1,7 @@
+[
+  {
+    "origin": ["https://cpisgod.github.io", "http://localhost:8000"],
+    "method": ["GET"],
+    "maxAgeSeconds": 3600
+  }
+]
