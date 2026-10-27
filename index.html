@@ -95,7 +95,13 @@
     }
     #theme-toggle:hover { background: #333; color: #bbb; }
 
-    #memo-list { flex: 1; overflow-y: auto; }
+    #memo-list { flex: 1; overflow-y: auto; min-height: 60px; }
+    #doc-header {
+      padding: 8px 14px 6px; font-size: 10px; letter-spacing: 2px; color: #777;
+      border-top: 1px solid #333; border-bottom: 1px solid #2e2e2e;
+    }
+    #doc-list { max-height: 28vh; overflow-y: auto; }
+    .doc-item.active { background: #3a2d2d; color: #bc8f8f; }
     .memo-item {
       display: flex;
       align-items: center;
@@ -453,6 +459,8 @@
   <button id="split-toggle">⊟ 분할화면</button>
   <button id="theme-toggle">🌙 다크모드</button>
   <div id="memo-list"></div>
+  <div id="doc-header">DOCS</div>
+  <div id="doc-list"></div>
   <div id="status">⏳ 연결 중...</div>
 </div>
 
@@ -461,6 +469,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, onValue, set, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getStorage, ref as sRef, uploadBytesResumable, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyDgjizBR_P_ccjZczxcvCLmVuUi2wKIQYU",
@@ -517,14 +526,21 @@
   const app      = initializeApp(firebaseConfig);
   const db       = getDatabase(app);
   const memosRef = ref(db, "memos");
+  const docsRef  = ref(db, "docs");
+  const storage  = getStorage(app);
 
   const panelsEl    = document.getElementById("panels");
   const memoListEl  = document.getElementById("memo-list");
   const statusEl    = document.getElementById("status");
   const newBtn      = document.getElementById("new-btn");
   const splitToggle = document.getElementById("split-toggle");
+  const docListEl   = document.getElementById("doc-list");
 
   let memos   = {};
+  let docs    = {};          // RTDB에 저장된 문서 메타 { id: {name, path, size} }
+  const localDocs = {};      // 업로드 실패 시 이번 세션에서만 볼 수 있는 임시 문서
+  const docCache  = new Map(); // id -> ArrayBuffer (재다운로드 방지)
+  const getDoc = (id) => docs[id] || localDocs[id];
   let splitOn = false;
   let pins    = {};  // { memoId: Set<paraIdx> }
   let panels  = [];
@@ -619,7 +635,7 @@
     const selcount   = wrap.querySelector(".selcount");
 
     const pState = { memoId: null, editorEl: editor, titleEl: titleInput, gutterEl: gutter, selCountEl: selcount, dirty: false,
-                     panelEl: wrap, docFile: null, docToken: 0 };
+                     panelEl: wrap, docId: null, docToken: 0 };
     panels[panelIdx] = pState;
 
     // 문서 열기: 버튼 / 드래그앤드롭
@@ -627,7 +643,7 @@
     const docInput = wrap.querySelector(".doc-file");
     docBtn.addEventListener("click", () => docInput.click());
     docInput.addEventListener("change", () => {
-      if (docInput.files[0]) openDoc(panelIdx, docInput.files[0]);
+      if (docInput.files[0]) openLocalFile(panelIdx, docInput.files[0]);
       docInput.value = "";
     });
     wrap.querySelector(".doc-close").addEventListener("click", () => closeDoc(panelIdx));
@@ -645,7 +661,7 @@
       const f = e.dataTransfer && e.dataTransfer.files[0];
       if (!f) return;
       e.preventDefault();
-      openDoc(panelIdx, f);
+      openLocalFile(panelIdx, f);
     });
 
     saveBtn.addEventListener("click", () => savePanel(panelIdx));
@@ -792,27 +808,73 @@
     body.appendChild(page);
   }
 
-  async function openDoc(panelIdx, file) {
-    const p = panels[panelIdx];
-    if (!p || !file) return;
-    const ext = (file.name.split(".").pop() || "").toLowerCase();
-    const renderer = { pdf: renderPdf, docx: renderDocx, hwpx: renderHwpx }[ext];
-    if (!renderer) {
+  const DOC_RENDERERS = { pdf: renderPdf, docx: renderDocx, hwpx: renderHwpx };
+  const extOf = (name) => (name.split(".").pop() || "").toLowerCase();
+
+  // 어떤 패널에 어떤 문서가 열려 있는지 기억 → 새로고침 후 복원
+  function saveDocState() {
+    try {
+      localStorage.setItem("panelDocs", JSON.stringify({
+        split: splitOn,
+        ids: [panels[0] && panels[0].docId || null, panels[1] && panels[1].docId || null]
+      }));
+    } catch (e) {}
+  }
+
+  // 로컬 파일 선택/드롭 → Storage 업로드 → 패널에 표시
+  async function openLocalFile(panelIdx, file) {
+    const ext = extOf(file.name);
+    if (!DOC_RENDERERS[ext]) {
       alert(ext === "hwp" || ext === "doc"
         ? `.${ext} (구형 바이너리 포맷)은 지원하지 않습니다. ${ext === "hwp" ? "한글에서 .hwpx" : "Word에서 .docx"}로 저장 후 열어주세요.`
         : "PDF, DOCX, HWPX 파일만 열 수 있습니다.");
       return;
     }
+    const buf = await file.arrayBuffer();
+    const path = `docs/${Date.now()}_${file.name.replace(/[^\w.\-가-힣]+/g, "_")}`;
+    try {
+      const task = uploadBytesResumable(sRef(storage, path), buf, { contentType: file.type || undefined });
+      task.on("state_changed", (snap) => {
+        statusEl.textContent = `⬆️ 업로드 ${Math.round(snap.bytesTransferred / snap.totalBytes * 100)}% · ${file.name}`;
+      });
+      await task;
+      const newRef = push(docsRef);
+      await set(newRef, { name: file.name, path, size: file.size, ts: Date.now() });
+      docCache.set(newRef.key, buf);
+      docs[newRef.key] = { name: file.name, path, size: file.size };  // onValue 도착 전에도 바로 열 수 있게
+      statusEl.textContent = "✅ 문서 저장됨 " + new Date().toLocaleTimeString();
+      openDoc(panelIdx, newRef.key);
+    } catch (e) {
+      statusEl.textContent = "❌ 업로드 실패(이번 세션에서만 보임): " + e.message;
+      const tmpId = "local_" + Date.now();
+      localDocs[tmpId] = { name: file.name, local: true };
+      docCache.set(tmpId, buf);
+      openDoc(panelIdx, tmpId);
+    }
+  }
+
+  async function openDoc(panelIdx, docId) {
+    const p = panels[panelIdx];
+    const d = getDoc(docId);
+    if (!p || !d) return;
+    const renderer = DOC_RENDERERS[extOf(d.name)];
+    if (!renderer) return;
     const token = ++p.docToken;
-    p.docFile = file;
+    p.docId = docId;
     p.panelEl.classList.add("doc-open");
-    p.panelEl.querySelector(".doc-name").textContent = "📄 " + file.name;
+    p.panelEl.querySelector(".doc-name").textContent = "📄 " + d.name;
     const body = p.panelEl.querySelector(".doc-body");
     body.innerHTML = '<div class="doc-msg">⏳ 문서를 불러오는 중...</div>';
+    saveDocState();
+    renderDocList();
     try {
-      const buf = await file.arrayBuffer();
+      let buf = docCache.get(docId);
+      if (!buf) {
+        buf = await getBytes(sRef(storage, d.path));
+        docCache.set(docId, buf);
+      }
       if (token !== p.docToken) return;  // 그 사이 다른 문서를 열었거나 닫힘
-      await renderer(buf, body);
+      await renderer(buf.slice(0), body);
     } catch (e) {
       if (token !== p.docToken) return;
       body.innerHTML = "";
@@ -827,10 +889,54 @@
     const p = panels[panelIdx];
     if (!p) return;
     p.docToken++;
-    p.docFile = null;
+    p.docId = null;
     p.panelEl.classList.remove("doc-open");
     p.panelEl.querySelector(".doc-body").innerHTML = "";
+    saveDocState();
+    renderDocList();
     requestAnimationFrame(() => renderGutter(panelIdx));
+  }
+
+  function sidebarClickDoc(docId) {
+    if (!splitOn) openDoc(0, docId);
+    else if (panels[0] && panels[0].docId === docId) openDoc(1, docId);
+    else openDoc(0, docId);
+  }
+
+  async function deleteDoc(id) {
+    const d = getDoc(id);
+    if (!d || !confirm(`"${d.name}" 문서를 삭제할까요?`)) return;
+    panels.forEach((p, i) => { if (p && p.docId === id) closeDoc(i); });
+    docCache.delete(id);
+    if (d.local) { delete localDocs[id]; renderDocList(); return; }
+    try { await deleteObject(sRef(storage, d.path)); } catch (e) {}
+    remove(ref(db, `docs/${id}`));
+  }
+
+  function renderDocList() {
+    docListEl.innerHTML = "";
+    const all = { ...docs, ...localDocs };
+    const ids = Object.keys(all);
+    if (!ids.length) {
+      docListEl.innerHTML = '<div style="padding:10px 14px;color:#555;font-size:11px;">문서 없음</div>';
+      return;
+    }
+    const open = panels.map(p => p && p.docId);
+    ids.forEach(id => {
+      const item = document.createElement("div");
+      item.className = "memo-item doc-item" + (open.includes(id) ? " active" : "");
+      const t = document.createElement("span");
+      t.className = "memo-item-title";
+      t.textContent = (all[id].local ? "⚠️ " : "📄 ") + all[id].name;
+      const del = document.createElement("button");
+      del.className = "delete-btn";
+      del.textContent = "×";
+      del.addEventListener("click", (e) => { e.stopPropagation(); deleteDoc(id); });
+      item.appendChild(t);
+      item.appendChild(del);
+      item.addEventListener("click", () => sidebarClickDoc(id));
+      docListEl.appendChild(item);
+    });
   }
 
   function loadMemoInPanel(panelIdx, memoId) {
@@ -917,18 +1023,19 @@
   }
   document.addEventListener("selectionchange", updateSelectionCounts);
 
-  splitToggle.addEventListener("click", () => {
-    splitOn = !splitOn;
+  function setSplit(on) {
+    splitOn = on;
     splitToggle.textContent = splitOn ? "⊞ 분할화면 ON" : "⊟ 분할화면";
     splitToggle.classList.toggle("on", splitOn);
     rebuildPanels();
-  });
+  }
+  splitToggle.addEventListener("click", () => setSplit(!splitOn));
 
   function rebuildPanels() {
     const id0 = panels[0] ? panels[0].memoId : null;
     const id1 = panels[1] ? panels[1].memoId : null;
-    const doc0 = panels[0] ? panels[0].docFile : null;
-    const doc1 = panels[1] ? panels[1].docFile : null;
+    const doc0 = panels[0] ? panels[0].docId : null;
+    const doc1 = panels[1] ? panels[1].docId : null;
     panels = [];
     panelsEl.innerHTML = "";
 
@@ -1023,6 +1130,22 @@
       }
     });
     renderList();
+  }, (e) => { statusEl.textContent = "❌ " + e.message; });
+
+  // ── 문서 목록 구독 + 새로고침 시 열려있던 문서 복원 ──
+  let docsRestored = false;
+  onValue(docsRef, (snapshot) => {
+    docs = snapshot.val() || {};
+    renderDocList();
+    if (docsRestored) return;
+    docsRestored = true;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem("panelDocs")); } catch (e) {}
+    if (!saved || !Array.isArray(saved.ids)) return;
+    const [id0, id1] = saved.ids.map(id => (id && docs[id]) ? id : null);
+    if (saved.split && !splitOn) setSplit(true);
+    if (id0) openDoc(0, id0);
+    if (splitOn && id1) openDoc(1, id1);
   }, (e) => { statusEl.textContent = "❌ " + e.message; });
 
   rebuildPanels();
