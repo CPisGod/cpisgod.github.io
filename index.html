@@ -142,6 +142,9 @@
       padding: 0 0 0 6px;
     }
     .delete-btn:hover { color: #f55; }
+    .dl-btn { background: none; border: none; color: #777; cursor: pointer; padding: 0 2px 0 6px; display: flex; align-items: center; }
+    .dl-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+    .dl-btn:hover { color: #8fbc8f; }
     #status {
       padding: 8px 14px;
       font-size: 10px;
@@ -393,12 +396,12 @@
     .doc-bar { flex-wrap: wrap; }
     .doc-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; flex-wrap: wrap; }
     .pdf-nav, .zoom-ctl { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; }
-    .pdf-nav[hidden], .zoom-ctl[hidden], .find-btn[hidden], .rect-btn[hidden], .find-bar[hidden] { display: none; }
-    .pdf-nav button, .zoom-ctl button, .find-btn, .rect-btn, .find-bar button {
+    .pdf-nav[hidden], .zoom-ctl[hidden], .find-btn[hidden], .rect-btn[hidden], .find-bar[hidden], .doc-dl[hidden] { display: none; }
+    .pdf-nav button, .zoom-ctl button, .find-btn, .rect-btn, .doc-dl, .find-bar button {
       background: transparent; color: var(--text-main); border: 1px solid var(--border-light);
       padding: 3px 8px; font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
     }
-    .pdf-nav button:hover, .zoom-ctl button:hover, .find-btn:hover, .rect-btn:hover, .find-bar button:hover { background: var(--gutter-bg); }
+    .pdf-nav button:hover, .zoom-ctl button:hover, .find-btn:hover, .rect-btn:hover, .doc-dl:hover, .find-bar button:hover { background: var(--gutter-bg); }
     .rect-btn.on { background: #e8590c; color: #fff; border-color: #e8590c; }
     .pg-input { width: 46px; text-align: center; font-size: 12px; padding: 2px; background: var(--bg-editor); color: var(--text-main); border: 1px solid var(--border-light); }
     .zoom-val { min-width: 38px; text-align: center; }
@@ -491,6 +494,11 @@
     .doc-page p { min-height: 1.2em; margin: 0 0 .3em; }
     .doc-page img { max-width: 100%; height: auto; }
     .doc-page table { border-collapse: collapse; margin: 8px 0; max-width: 100%; }
+    /* DOCX/HWPX: 고정 폭 용지로 보여 CSS zoom으로 확대/축소. 쪽 구분선은 용지 비율로 그리는 "가상 쪽" 표시 */
+    .doc-page.sheet {
+      --page-h: 1160px; width: 820px; max-width: none; flex-shrink: 0;
+      background-image: repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--page-h) - 2px), #cfd8e3 calc(var(--page-h) - 2px), #cfd8e3 var(--page-h));
+    }
     .doc-page.hwpx { font-size: 10pt; line-height: 1.6; }
     .doc-page.hwpx p { margin: 0; }
     .doc-page .hwpx-noimg { color: #999; font-size: .85em; }
@@ -976,6 +984,7 @@
             </span>
             <button class="find-btn" hidden title="문서에서 찾기 (Ctrl+F)">🔍</button>
             <button class="rect-btn" hidden title="영역 표시: 드래그로 사각형 그리기">▭</button>
+            <button class="doc-dl" hidden title="이 문서를 내 컴퓨터에 다운로드">⬇</button>
             <button class="ann-count" hidden title="하이라이트/메모 목록">💬 0</button>
             <button class="doc-close">✕ 닫고 메모로</button>
           </span>
@@ -1033,7 +1042,7 @@
     docBody.addEventListener("touchend", (e) => onDocPointerUp(panelIdx, e));
     docBody.addEventListener("scroll", () => {
       hideAnnPop();
-      if (pState.docKind === "pdf" && pState.docReady) requestAnimationFrame(() => updateCurrentPage(pState));
+      if (pState.docKind !== "image" && pState.docReady) requestAnimationFrame(() => updateCurrentPage(pState));
       saveDocPosSoon(pState);
     });
     docBody.addEventListener("mousedown", (e) => startRect(panelIdx, e));
@@ -1046,9 +1055,10 @@
     q(".pg-input").addEventListener("keydown", (e) => { if (e.key === "Enter") { jumpPage(pState, parseInt(e.target.value, 10) || 1); e.target.blur(); } });
     q(".zoom-in").addEventListener("click", () => stepZoom(pState, 1));
     q(".zoom-out").addEventListener("click", () => stepZoom(pState, -1));
-    q(".zoom-fit").addEventListener("click", () => setZoom(pState, 1));
+    q(".zoom-fit").addEventListener("click", () => fitZoom(pState));
     q(".rect-btn").addEventListener("click", () => setRectMode(pState, !pState.rectMode));
     q(".find-btn").addEventListener("click", () => openFind(pState));
+    q(".doc-dl").addEventListener("click", () => pState.docId && downloadDoc(pState.docId));
     q(".find-close").addEventListener("click", () => closeFind(pState));
     q(".find-next").addEventListener("click", () => findStep(pState, 1));
     q(".find-prev").addEventListener("click", () => findStep(pState, -1));
@@ -1224,7 +1234,7 @@
   async function renderDocx(buf, body) {
     await loadScript(CDN + "mammoth/1.6.0/mammoth.browser.min.js");
     const result = await mammoth.convertToHtml({ arrayBuffer: buf });
-    body.innerHTML = '<div class="doc-page doc-textroot"></div>';
+    body.innerHTML = '<div class="doc-page doc-textroot sheet"></div>';
     body.firstChild.innerHTML = result.value || '<p class="doc-msg">내용이 없습니다.</p>';
   }
 
@@ -1319,7 +1329,13 @@
     }));
 
     const page = document.createElement("div");
-    page.className = "doc-page doc-textroot hwpx";
+    page.className = "doc-page doc-textroot hwpx sheet";
+    // 문서에 적힌 용지 크기(pagePr)가 있으면 가상 쪽 높이에 반영 (없으면 A4 비율)
+    for (const xml of sections) {
+      const pp = Array.from(xml.getElementsByTagName("*")).find(e => e.localName === "pagePr");
+      const w = pp && parseInt(pp.getAttribute("width"), 10), h = pp && parseInt(pp.getAttribute("height"), 10);
+      if (w > 0 && h > 0) { page.style.setProperty("--page-h", (820 * h / w).toFixed(1) + "px"); break; }
+    }
 
     function buildPic(pic) {
       const imgEl = Array.from(pic.getElementsByTagName("*")).find(e => e.localName === "img");
@@ -1611,6 +1627,12 @@
       await renderer(buf.slice(0), body, p, ext);
       if (token !== p.docToken) return;
       p.docReady = true;
+      if (p.docKind === "text") {
+        // 저장된 배율이 없으면: 패널이 용지보다 좁을 때만 폭에 맞춰 줄여서 보여준다
+        if (!(pos && pos.z)) p.zoom = Math.min(1, Math.max(0.3, (body.clientWidth - 32) / SHEET_W));
+        applyTextZoom(p);
+        watchTextResize(p, token);
+      }
       updateDocTools(p);
       if (p.docKind === "pdf") watchPdfResize(p, token);
       // 하이라이트/메모는 업로드된 문서에만 저장된다(임시 문서 제외)
@@ -1978,26 +2000,50 @@
 
   // ── 문서 도구 모음: 쪽 이동, 확대/축소, 문서 내 검색, 영역 표시 ──
   const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
+  const SHEET_W = 820;   // DOCX/HWPX 용지 폭(px). zoom 1 = 원본 크기
+  const sheetOf = (p) => p.panelEl.querySelector(".doc-page.sheet");
+
+  // 쪽 수/현재 쪽: PDF는 실제 쪽, DOCX/HWPX는 용지 비율로 나눈 가상 쪽
+  function sheetPageH(p) {   // 화면상 가상 쪽 높이(px, 확대 반영)
+    const el = sheetOf(p);
+    return (parseFloat(getComputedStyle(el).getPropertyValue("--page-h")) || 1160) * (p.zoom || 1);
+  }
+  function pageCount(p) {
+    if (p.docKind === "pdf") return p.pdfPages || 1;
+    const el = sheetOf(p);
+    return el ? Math.max(1, Math.ceil((el.getBoundingClientRect().height - 1) / sheetPageH(p))) : 1;
+  }
   function updateDocTools(p) {
     const q = (sel) => p.panelEl.querySelector(sel);
     const d = p.docId && getDoc(p.docId);
     const ready = !!(d && p.docReady);
-    q(".pdf-nav").hidden = !(ready && p.docKind === "pdf");
-    q(".zoom-ctl").hidden = !(ready && p.docKind !== "text");
+    q(".pdf-nav").hidden = !(ready && p.docKind !== "image");
+    q(".zoom-ctl").hidden = !ready;
+    q(".doc-dl").hidden = !ready;
     q(".find-btn").hidden = !(ready && textRootOf(p));
     q(".rect-btn").hidden = !(ready && !d.local && p.docKind !== "text");
     q(".zoom-val").textContent = Math.round((p.zoom || 1) * 100) + "%";
-    if (ready && p.docKind === "pdf") {
-      q(".pg-total").textContent = p.pdfPages || 1;
-      q(".pg-input").max = p.pdfPages || 1;
+    q(".pg-input").title = p.docKind === "text" ? "쪽 번호 (A4 기준 가상 쪽 — 실제 한글/워드의 쪽 나눔과 다를 수 있음)" : "쪽 번호";
+    if (ready && p.docKind !== "image") {
+      const n = pageCount(p);
+      q(".pg-total").textContent = n;
+      q(".pg-input").max = n;
       updateCurrentPage(p);
     }
   }
   function currentPage(p) {
     const body = p.panelEl.querySelector(".doc-body");
     const top = body.getBoundingClientRect().top;
-    let cur = 1;
     const line = Math.max(80, body.clientHeight * 0.3);  // 화면 위쪽 30% 지점에 걸친 쪽을 현재 쪽으로
+    // 맨 아래까지 내려왔으면 (마지막 쪽이 짧아 맨 위로 맞출 수 없어도) 마지막 쪽으로 본다
+    if (body.scrollTop > 0 && body.scrollTop + body.clientHeight >= body.scrollHeight - 2) return pageCount(p);
+    if (p.docKind === "text") {
+      const el = sheetOf(p);
+      if (!el) return 1;
+      const y = line - (el.getBoundingClientRect().top - top);
+      return Math.min(pageCount(p), Math.max(1, Math.floor(y / sheetPageH(p)) + 1));
+    }
+    let cur = 1;
     body.querySelectorAll(".pdf-page").forEach((pg, i) => { if (pg.getBoundingClientRect().top - top <= line) cur = i + 1; });
     return cur;
   }
@@ -2007,21 +2053,55 @@
   }
   function jumpPage(p, n) {
     const body = p.panelEl.querySelector(".doc-body");
-    const pg = body.querySelectorAll(".pdf-page")[Math.min(Math.max(n, 1), p.pdfPages || 1) - 1];
+    n = Math.min(Math.max(n, 1), pageCount(p));
+    if (p.docKind === "text") {
+      const el = sheetOf(p);
+      if (el) body.scrollTop += el.getBoundingClientRect().top - body.getBoundingClientRect().top + (n - 1) * sheetPageH(p) - 8;
+      return;
+    }
+    const pg = body.querySelectorAll(".pdf-page")[n - 1];
     if (pg) body.scrollTop += pg.getBoundingClientRect().top - body.getBoundingClientRect().top - 8;
   }
+
+  // 확대/축소. PDF·이미지는 "폭 맞춤 = 100%" 기준, DOCX/HWPX는 "원본 크기 = 100%" 기준
   function stepZoom(p, dir) {
     let i = ZOOM_STEPS.findIndex(z => z >= (p.zoom || 1) - 1e-6);
     if (i < 0) i = ZOOM_STEPS.length - 1;
+    // 맞춤 배율처럼 단계 사이에 있을 때: 확대는 다음 단계, 축소는 이전 단계
+    if (dir < 0 && ZOOM_STEPS[i] > (p.zoom || 1) + 1e-6) i--;
+    else if (dir > 0 && Math.abs(ZOOM_STEPS[i] - (p.zoom || 1)) > 1e-6) i--;
     const next = ZOOM_STEPS[Math.min(Math.max(i + dir, 0), ZOOM_STEPS.length - 1)];
     setZoom(p, next);
   }
+  function fitZoom(p) {   // 맞춤: 패널 폭에 딱 맞게
+    if (p.docKind !== "text") return setZoom(p, 1);
+    const body = p.panelEl.querySelector(".doc-body");
+    setZoom(p, Math.min(3, Math.max(0.3, (body.clientWidth - 32) / SHEET_W)));
+  }
+  function applyTextZoom(p) {
+    const el = sheetOf(p), body = p.panelEl.querySelector(".doc-body");
+    if (!el) return;
+    const ratio = body.scrollTop / (body.scrollHeight || 1);
+    el.style.zoom = p.zoom || 1;
+    body.scrollTop = ratio * body.scrollHeight;   // 보던 위치 유지
+  }
   function setZoom(p, z) {
-    if (!p.docReady || z === p.zoom) return;
+    if (!p.docReady || Math.abs(z - (p.zoom || 1)) < 1e-6) return;
     p.zoom = z;
+    if (p.docKind === "text") applyTextZoom(p);
+    else rerenderPdf(p);   // PDF/이미지는 다시 그림
     updateDocTools(p);
     saveDocPosSoon(p);
-    rerenderPdf(p);   // PDF/이미지 모두 같은 경로로 다시 그림
+  }
+  // DOCX/HWPX: 그림이 늦게 로드되는 등 높이가 바뀌면 쪽 수를 다시 센다
+  function watchTextResize(p, token) {
+    const el = sheetOf(p);
+    if (!el) return;
+    p.docRO = new ResizeObserver(() => {
+      clearTimeout(p.roTimer);
+      p.roTimer = setTimeout(() => { if (token === p.docToken && p.docReady) updateDocTools(p); }, 200);
+    });
+    p.docRO.observe(el);
   }
 
   function setRectMode(p, on) {
@@ -2168,6 +2248,20 @@
     });
   }
 
+  // 문서를 사용 중인 컴퓨터에 원래 파일 이름으로 내려받기 (이미 불러온 문서는 캐시를 써서 다시 받지 않음)
+  async function downloadDoc(id) {
+    const d = getDoc(id);
+    if (!d) return;
+    statusEl.textContent = "⬇ 다운로드 준비 중...";
+    try {
+      const buf = await loadDocBuffer(id, d);
+      downloadBlob(d.name, new Blob([buf], { type: "application/octet-stream" }));
+      statusEl.textContent = "✅ 다운로드: " + d.name;
+    } catch (e) {
+      statusEl.textContent = "❌ 다운로드 실패: " + e.message;
+    }
+  }
+
   async function deleteDoc(id) {
     const d = getDoc(id);
     if (!d || !confirm(`"${d.name}" 문서를 삭제할까요?`)) return;
@@ -2197,11 +2291,18 @@
       const t = document.createElement("span");
       t.className = "memo-item-title";
       t.textContent = (all[id].local ? "⚠️ " : "📄 ") + all[id].name;
+      const dl = document.createElement("button");
+      dl.className = "dl-btn";
+      dl.title = "내 컴퓨터에 다운로드";
+      dl.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${ICONS.download}</svg>`;
+      dl.addEventListener("click", (e) => { e.stopPropagation(); downloadDoc(id); });
       const del = document.createElement("button");
       del.className = "delete-btn";
       del.textContent = "×";
+      del.title = "삭제";
       del.addEventListener("click", (e) => { e.stopPropagation(); deleteDoc(id); });
       item.appendChild(t);
+      item.appendChild(dl);
       item.appendChild(del);
       item.addEventListener("click", () => sidebarClickDoc(id));
       docListEl.appendChild(item);
