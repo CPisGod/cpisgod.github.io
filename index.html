@@ -96,6 +96,26 @@
     #theme-toggle:hover { background: #333; color: #bbb; }
 
     #memo-list { flex: 1; overflow-y: auto; min-height: 60px; }
+    .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 10px 8px; }
+    .side-grid button {
+      background: #2a2a2a; color: #888; border: 1px solid #3a3a3a; padding: 6px 0;
+      font-family: 'Noto Sans KR', sans-serif; font-size: 11px; cursor: pointer;
+    }
+    .side-grid button:hover { background: #333; color: #bbb; }
+    #memo-controls { padding: 4px 10px; border-top: 1px solid #2a2a2a; }
+    #sort-select {
+      width: 100%; background: #2a2a2a; color: #999; border: 1px solid #3a3a3a; padding: 4px;
+      font-size: 11px; font-family: 'Noto Sans KR', sans-serif;
+    }
+    #tag-filter { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .tag-chip { background: #2a2a2a; color: #999; border: 1px solid #3a3a3a; padding: 1px 7px; font-size: 10px; cursor: pointer; border-radius: 9px; }
+    .tag-chip.on { background: #3d5a3d; color: #cfe8cf; border-color: #5a9a5a; }
+    .folder-head {
+      padding: 6px 14px; font-size: 10px; letter-spacing: 1px; color: #777; cursor: pointer;
+      background: #1e1e1e; border-bottom: 1px solid #2a2a2a; user-select: none;
+    }
+    .folder-head:hover { color: #aaa; }
+    .memo-item-tags { color: #6b6b6b; font-size: 10px; margin-left: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
     #doc-header {
       padding: 8px 14px 6px; font-size: 10px; letter-spacing: 2px; color: #777;
       border-top: 1px solid #333; border-bottom: 1px solid #2e2e2e;
@@ -291,6 +311,49 @@
       flex-shrink: 0;
     }
     .selcount:empty { display: none; }
+    .panel-bottom { justify-content: space-between; }
+    .bottom-right { display: inline-flex; gap: 8px; margin-left: auto; }
+    .fmt-bar { display: inline-flex; gap: 3px; }
+    .fmt-bar button {
+      background: transparent; color: #999; border: 1px solid var(--border-light); padding: 1px 7px;
+      font-size: 11px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    }
+    .fmt-bar button:hover { background: var(--gutter-bg); color: var(--text-main); }
+    .conflict-note { color: #e8590c; font-weight: 500; }
+    .conflict-note[hidden] { display: none; }
+    .panel.doc-open .fmt-bar, .panel.doc-open .conflict-note { display: none; }
+    .meta-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-main); padding: 6px 9px; cursor: pointer; flex-shrink: 0; font-size: 12px; }
+    .meta-btn:hover { background: var(--gutter-bg); }
+    .meta-btn.has { border-color: #5a9a5a; }
+    /* 마크다운식 줄 서식: 저장은 순수 텍스트(접두어)이고 화면에서만 꾸민다 */
+    .memo-editor p.md-h1 { font-size: 1.5em; font-weight: 700; line-height: 1.5; }
+    .memo-editor p.md-h2 { font-size: 1.25em; font-weight: 600; line-height: 1.6; }
+    .memo-editor p.md-quote { border-left: 3px solid #aaa; padding-left: 10px; color: #777; }
+    .memo-editor p.md-done { text-decoration: line-through; color: #999; }
+    #meta-pop {
+      position: fixed; z-index: 10000; display: none; background: #2a2a2a; color: #eee; padding: 10px;
+      border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.45); font-size: 12px; width: 240px;
+    }
+    #meta-pop label { display: block; margin: 6px 0 2px; color: #aaa; }
+    #meta-pop input[type="text"] { width: 100%; background: #1f1f1f; color: #eee; border: 1px solid #555; padding: 5px 7px; font-size: 12px; outline: none; font-family: 'Noto Sans KR', sans-serif; }
+    #meta-pop .pin-row { margin-top: 8px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 9000; display: flex; align-items: center; justify-content: center; }
+    .modal-box {
+      background: #262626; color: #ddd; width: 520px; max-width: calc(100% - 24px); max-height: 80vh; display: flex; flex-direction: column;
+      border: 1px solid #444; box-shadow: 0 8px 30px rgba(0,0,0,.5); font-size: 13px; font-family: 'Noto Sans KR', sans-serif;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #3a3a3a; font-weight: 500; }
+    .modal-head button { background: none; border: none; color: #999; font-size: 16px; cursor: pointer; }
+    .modal-body { padding: 12px 16px; overflow-y: auto; }
+    .modal-foot { padding: 10px 16px; border-top: 1px solid #3a3a3a; display: flex; gap: 8px; justify-content: flex-end; }
+    .modal-box button.btn { background: #3a3a3a; color: #eee; border: none; padding: 7px 12px; cursor: pointer; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; }
+    .modal-box button.btn:hover { background: #4a4a4a; }
+    .modal-box button.btn.danger:hover { background: #8a2b2b; }
+    .modal-box .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid #333; }
+    .modal-box .row .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .modal-box .row .sub { color: #888; font-size: 11px; }
+    .modal-box .stack { display: flex; flex-direction: column; gap: 8px; }
+    .modal-box .empty { color: #888; text-align: center; padding: 20px; }
 
     .memo-editor.font-consolas,
     .memo-editor.font-consolas p {
@@ -556,7 +619,19 @@
   <button id="new-btn">+ 새 메모</button>
   <button id="split-toggle">⊟ 분할화면</button>
   <button id="theme-toggle">🌙 다크모드</button>
+  <div class="side-grid">
+    <button id="trash-btn" title="삭제한 메모 복구">🗑 휴지통</button>
+    <button id="backup-btn" title="내보내기 / 백업 / 복원">⬇ 백업</button>
+  </div>
   <button id="logout-btn" style="margin:0 10px 10px;background:#2a2a2a;color:#888;border:1px solid #3a3a3a;padding:6px 0;font-family:'Noto Sans KR',sans-serif;font-size:11px;cursor:pointer;width:calc(100% - 20px);">로그아웃</button>
+  <div id="memo-controls">
+    <select id="sort-select" title="정렬">
+      <option value="recent">최근 수정순</option>
+      <option value="title">제목순</option>
+      <option value="created">만든 순</option>
+    </select>
+    <div id="tag-filter"></div>
+  </div>
   <div id="memo-list"></div>
   <div id="doc-header">DOCS</div>
   <div id="doc-list"></div>
@@ -568,7 +643,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, remove, push, update, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, onValue, set, remove, push, update, increment, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref as sRef, uploadBytesResumable, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -672,6 +747,42 @@
     ).join("\n");
   }
 
+  // ── 공통 모달 / 다운로드 ──
+  let modalEl = null;
+  function closeModal() { if (modalEl) { modalEl.remove(); modalEl = null; } }
+  function openModal(title, build) {
+    closeModal();
+    const bg = document.createElement("div");
+    bg.className = "modal-bg";
+    bg.innerHTML = '<div class="modal-box"><div class="modal-head"><span></span><button title="닫기">✕</button></div><div class="modal-body"></div><div class="modal-foot" hidden></div></div>';
+    bg.querySelector(".modal-head span").textContent = title;
+    bg.querySelector(".modal-head button").addEventListener("click", closeModal);
+    bg.addEventListener("mousedown", (e) => { if (e.target === bg) closeModal(); });
+    document.body.appendChild(bg);
+    modalEl = bg;
+    build(bg.querySelector(".modal-body"), bg.querySelector(".modal-foot"));
+    return bg;
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modalEl) closeModal(); });
+  function modalButton(label, onClick, cls = "") {
+    const b = document.createElement("button");
+    b.className = "btn " + cls;
+    b.textContent = label;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+  function downloadBlob(name, data, mime) {
+    const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type: mime }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  const safeName = (t) => (t || "제목 없음").replace(/[\\/:*?"<>|\n\r]+/g, "_").slice(0, 60);
+
   // ── 거터 렌더링 ──
   // 각 <p>의 offsetTop, offsetHeight를 그대로 반영해서 정확히 맞춤
   function renderGutter(panelIdx) {
@@ -712,6 +823,123 @@
     inner.style.height = p.editorEl.scrollHeight + "px";
   }
 
+  // ── 줄 서식 (마크다운 접두어) ──
+  const FMT_PREFIX = { h1: "# ", h2: "## ", ul: "- ", todo: "- [ ] ", quote: "> " };
+  const ANY_PREFIX = /^(#{1,2} |- \[[ xX]\] |- |> )/;
+  const LIST_PREFIX = /^(- \[[ xX]\] |- |> )/;
+  function paraClass(text) {
+    if (text.startsWith("## ")) return "md-h2";
+    if (text.startsWith("# ")) return "md-h1";
+    if (/^- \[[xX]\] /.test(text)) return "md-done";
+    if (text.startsWith("> ")) return "md-quote";
+    return "";
+  }
+  function styleParas(editor) {
+    editor.querySelectorAll("p").forEach(pe => {
+      const c = paraClass(pe.textContent);
+      if (pe.className !== c) pe.className = c;
+    });
+  }
+  function currentPara(editor) {
+    const sel = window.getSelection();
+    let n = sel.rangeCount ? sel.getRangeAt(0).startContainer : null;
+    while (n && n !== editor) { if (n.nodeType === 1 && n.tagName === "P") return n; n = n.parentNode; }
+    return null;
+  }
+  function selectedParas(editor) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return [];
+    const r = sel.getRangeAt(0);
+    const ps = Array.from(editor.querySelectorAll("p")).filter(pe => r.intersectsNode(pe));
+    return ps.length ? ps : [currentPara(editor)].filter(Boolean);
+  }
+  function setCaretEnd(el) {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    r.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+  function toggleLinePrefix(panelIdx, kind) {
+    const p = panels[panelIdx];
+    if (!p || p.docId) return;
+    const paras = selectedParas(p.editorEl);
+    if (!paras.length) return;
+    const target = FMT_PREFIX[kind];
+    const norm = (pe) => { const m = pe.textContent.match(ANY_PREFIX); return m ? m[0].replace(/\[[xX]\]/, "[ ]") : ""; };
+    const allHave = paras.every(pe => norm(pe) === target);
+    paras.forEach(pe => {
+      const t = pe.textContent.replace(ANY_PREFIX, "");
+      pe.textContent = allHave ? t : target + t;
+      if (!pe.textContent) pe.innerHTML = "<br>";
+    });
+    setCaretEnd(paras[paras.length - 1]);
+    p.editorEl.focus();
+    onEditorChanged(panelIdx);
+  }
+  function toggleTodoDone(panelIdx) {
+    const p = panels[panelIdx];
+    const pe = p && currentPara(p.editorEl);
+    if (!pe) return;
+    const t = pe.textContent;
+    if (/^- \[ \] /.test(t)) pe.textContent = t.replace("- [ ] ", "- [x] ");
+    else if (/^- \[[xX]\] /.test(t)) pe.textContent = t.replace(/^- \[[xX]\] /, "- [ ] ");
+    else return;
+    setCaretEnd(pe);
+    onEditorChanged(panelIdx);
+  }
+  // Enter: 목록/체크리스트/인용 줄에서는 다음 줄에 접두어를 이어 붙이고, 빈 항목에서 Enter를 치면 목록을 끝낸다
+  function handleEnter(panelIdx) {
+    const p = panels[panelIdx];
+    const pe = currentPara(p.editorEl);
+    const sel = window.getSelection();
+    const m = pe && pe.textContent.match(LIST_PREFIX);
+    if (m && sel.isCollapsed) {
+      const pre = document.createRange();
+      pre.selectNodeContents(pe);
+      pre.setEnd(sel.getRangeAt(0).startContainer, sel.getRangeAt(0).startOffset);
+      if (pre.toString().length >= m[0].length) {
+        if (pe.textContent.length === m[0].length) {   // 빈 항목 → 목록 종료
+          pe.innerHTML = "<br>";
+          setCaretEnd(pe);
+          onEditorChanged(panelIdx);
+          return;
+        }
+        document.execCommand("insertParagraph");
+        document.execCommand("insertText", false, m[0].replace(/\[[xX]\]/, "[ ]"));
+        onEditorChanged(panelIdx);
+        return;
+      }
+    }
+    document.execCommand("insertParagraph");
+    onEditorChanged(panelIdx);
+  }
+
+  // ── 임시 저장(draft): 저장 전에 탭이 닫히거나 오프라인이어도 내용을 잃지 않게 이 브라우저에 보관 ──
+  const draftKey = (id) => "draft:" + id;
+  function writeDraft(p) {
+    if (!p || !p.memoId) return;
+    try {
+      localStorage.setItem(draftKey(p.memoId), JSON.stringify({
+        title: p.titleEl.value, content: htmlToText(p.editorEl), ts: Date.now(), base: p.baseTs || 0
+      }));
+    } catch (e) {}
+  }
+  function clearDraft(id) { try { localStorage.removeItem(draftKey(id)); } catch (e) {} }
+  function readDraft(id) { try { return JSON.parse(localStorage.getItem(draftKey(id))); } catch (e) { return null; } }
+
+  function onEditorChanged(panelIdx) {
+    const p = panels[panelIdx];
+    if (!p) return;
+    p.dirty = true;
+    styleParas(p.editorEl);
+    p.panelEl.querySelector(".charcount").textContent = htmlToText(p.editorEl).length + "자";
+    requestAnimationFrame(() => renderGutter(panelIdx));
+    clearTimeout(p.draftTimer);
+    p.draftTimer = setTimeout(() => writeDraft(p), 400);
+  }
+
   // ── 패널 DOM 생성 ──
   function createPanelEl(panelIdx) {
     const wrap = document.createElement("div");
@@ -720,6 +948,7 @@
     wrap.innerHTML = `
       <div class="panel-header">
         <input class="panel-title-input" type="text" placeholder="제목 없음" maxlength="80" />
+        <button class="meta-btn" title="폴더 / 태그 / 고정">🏷</button>
         <button class="doc-btn" title="PDF / DOCX / HWPX / 이미지 열기">📄 문서</button>
         <input class="doc-file" type="file" accept=".pdf,.docx,.hwpx,.png,.jpg,.jpeg,.gif,.webp,.bmp" hidden />
         <button class="save-btn">저장</button>
@@ -753,7 +982,13 @@
         <div class="memo-editor" contenteditable="true" spellcheck="false"
              data-placeholder="메모를 선택하세요..."></div>
       </div>
-      <div class="panel-bottom"><span class="selcount"></span><span class="charcount">0자</span></div>
+      <div class="panel-bottom">
+        <span class="fmt-bar">
+          <button data-fmt="h1" title="제목 1 (# )">H1</button><button data-fmt="h2" title="제목 2 (## )">H2</button><button data-fmt="ul" title="목록 (- )">•</button><button data-fmt="todo" title="체크리스트 (Ctrl+Enter로 체크)">☑</button><button data-fmt="quote" title="인용 (> )">❝</button><button data-fmt="export" title="이 메모를 .md로 내보내기">⬇ .md</button>
+        </span>
+        <span class="conflict-note" hidden>⚠️ 다른 곳에서 수정됨 — 저장하면 덮어씁니다</span>
+        <span class="bottom-right"><span class="selcount"></span><span class="charcount">0자</span></span>
+      </div>
     `;
 
     const titleInput = wrap.querySelector(".panel-title-input");
@@ -764,6 +999,7 @@
     const selcount   = wrap.querySelector(".selcount");
 
     const pState = { memoId: null, editorEl: editor, titleEl: titleInput, gutterEl: gutter, selCountEl: selcount, dirty: false,
+                     baseTs: 0, draftTimer: null,
                      panelEl: wrap, docId: null, docToken: 0,
                      anns: {}, orphans: new Set(), docReady: false, pendingEdit: null, pendingJump: null,
                      annsLoaded: false, docKind: "text", docExt: "", docBuf: null, zoom: 1, pdfSeq: 0, pdfIOs: [], pdfPages: 0,
@@ -833,21 +1069,31 @@
 
     saveBtn.addEventListener("click", () => savePanel(panelIdx));
 
-    titleInput.addEventListener("input", () => { pState.dirty = true; });
+    titleInput.addEventListener("input", () => {
+      pState.dirty = true;
+      clearTimeout(pState.draftTimer);
+      pState.draftTimer = setTimeout(() => writeDraft(pState), 400);
+    });
 
     editor.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); toggleTodoDone(panelIdx); return; }
       if (e.key === "Enter") {
         e.preventDefault();
-        document.execCommand("insertParagraph");
-        requestAnimationFrame(() => renderGutter(panelIdx));
+        handleEnter(panelIdx);
       }
     });
 
-    editor.addEventListener("input", () => {
-      charcount.textContent = htmlToText(editor).length + "자";
-      pState.dirty = true;
-      requestAnimationFrame(() => renderGutter(panelIdx));
+    editor.addEventListener("input", () => onEditorChanged(panelIdx));
+
+    // 서식 버튼 / 메타(폴더·태그·고정) 버튼
+    wrap.querySelector(".fmt-bar").addEventListener("mousedown", (e) => e.preventDefault());  // 에디터 선택 유지
+    wrap.querySelector(".fmt-bar").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.fmt === "export") exportMemo(panelIdx, "md");
+      else toggleLinePrefix(panelIdx, b.dataset.fmt);
     });
+    wrap.querySelector(".meta-btn").addEventListener("click", (e) => openMetaPop(panelIdx, e.currentTarget));
 
     // 스크롤 동기화: gutter-inner를 translateY로 에디터 스크롤에 맞춤
     editor.addEventListener("scroll", () => {
@@ -863,6 +1109,7 @@
       const text = e.clipboardData.getData("text/plain").replace(/\r\n?/g, "\n");
       document.execCommand("insertText", false, text);
       requestAnimationFrame(() => renderGutter(panelIdx));
+      onEditorChanged(panelIdx);
     });
 
     const ro = new ResizeObserver(() => requestAnimationFrame(() => renderGutter(panelIdx)));
@@ -1878,23 +2125,37 @@
     });
   }
 
-  function loadMemoInPanel(panelIdx, memoId) {
+  function loadMemoInPanel(panelIdx, memoId, opts = {}) {
     const p = panels[panelIdx];
     if (!p) return;
     if (p.docId) closeDoc(panelIdx);
     p.memoId = memoId;
     const m = memos[memoId] || {};
+    const scroll = opts.sync ? p.editorEl.scrollTop : 0;
     p.titleEl.value      = m.title   || "";
     p.editorEl.innerHTML = textToHtml(m.content || "");
     p.editorEl.setAttribute("data-placeholder", "여기에 메모를 입력하세요...");
     p.dirty = false;
-    const panelEl = panelsEl.children[splitOn ? panelIdx * 2 : 0];
-    const charcountEl = panelEl ? panelEl.querySelector(".charcount") : null;
-    if (charcountEl) charcountEl.textContent = htmlToText(p.editorEl).length + "자";
+    p.baseTs = m.ts || 0;
+    p.panelEl.querySelector(".conflict-note").hidden = true;
+    // 저장되지 않은 임시 내용이 남아 있으면 복원 여부를 묻는다 (실시간 갱신일 때는 묻지 않음)
+    const draft = opts.sync ? null : readDraft(memoId);
+    if (draft && ((draft.content || "") !== (m.content || "") || (draft.title || "") !== (m.title || ""))) {
+      const when = new Date(draft.ts).toLocaleString();
+      if (confirm(`저장되지 않은 임시 내용이 있습니다 (${when}).\n복원할까요?\n\n[취소]를 누르면 임시 내용을 버립니다.`)) {
+        p.titleEl.value = draft.title || "";
+        p.editorEl.innerHTML = textToHtml(draft.content || "");
+        p.dirty = true;
+        if ((m.ts || 0) > (draft.base || 0)) p.panelEl.querySelector(".conflict-note").hidden = false;
+      } else clearDraft(memoId);
+    } else if (draft) clearDraft(memoId);
+    styleParas(p.editorEl);
+    p.panelEl.querySelector(".charcount").textContent = htmlToText(p.editorEl).length + "자";
+    p.panelEl.querySelector(".meta-btn").classList.toggle("has", !!(m.folder || (m.tags && m.tags.length) || m.pinned));
     // pins 로드
     const savedPins = m.pins ? new Set(m.pins) : new Set();
     pins[memoId] = savedPins;
-    requestAnimationFrame(() => renderGutter(panelIdx));
+    requestAnimationFrame(() => { renderGutter(panelIdx); if (scroll) p.editorEl.scrollTop = scroll; });
     renderList();
     saveDocState();
   }
@@ -1902,23 +2163,174 @@
   function savePanel(panelIdx, isAuto = false) {
     const p = panels[panelIdx];
     if (!p || !p.memoId) return;
-    const panelEl = panelsEl.children[splitOn ? panelIdx * 2 : 0];
-    const saveBtn = panelEl ? panelEl.querySelector(".save-btn") : null;
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "저장 중..."; }
+    const saveBtn = p.panelEl.querySelector(".save-btn");
     const title   = p.titleEl.value.trim() || "제목 없음";
     const content = htmlToText(p.editorEl);
     const pinArr  = p.memoId && pins[p.memoId] ? Array.from(pins[p.memoId]) : [];
-    set(ref(db, `memos/${p.memoId}`), { title, content, pins: pinArr })
+
+    writeDraft(p);   // 저장이 끝날 때까지 안전장치
+    if (!navigator.onLine) {
+      statusEl.textContent = "📴 오프라인 — 임시 저장됨. 연결되면 자동으로 저장됩니다.";
+      return;
+    }
+    // 내가 불러온 뒤 다른 기기/탭에서 먼저 수정했다면 덮어쓰기 전에 확인
+    const cur = memos[p.memoId];
+    if (cur && (cur.ts || 0) > p.baseTs && ((cur.content || "") !== content || (cur.title || "") !== title)) {
+      p.panelEl.querySelector(".conflict-note").hidden = false;
+      if (isAuto) { statusEl.textContent = "⚠️ 다른 곳에서 수정됨 — 자동저장 보류 (직접 저장하면 덮어씁니다)"; return; }
+      if (!confirm("다른 기기(또는 탭)에서 이 메모가 먼저 수정되었습니다.\n내 내용으로 덮어쓸까요?")) return;
+    }
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "저장 중..."; }
+    const ts = Date.now();
+    const prevBase = p.baseTs;
+    p.baseTs = ts;   // 내 저장이 되돌아오는 이벤트를 "남의 수정"으로 오해하지 않도록 먼저 갱신
+    update(ref(db, `memos/${p.memoId}`), { title, content, pins: pinArr.length ? pinArr : null, ts })
       .then(() => {
         p.dirty = false;
+        clearDraft(p.memoId);
+        p.panelEl.querySelector(".conflict-note").hidden = true;
         statusEl.textContent = (isAuto ? "💾 자동저장 " : "✅ ") + new Date().toLocaleTimeString();
         if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
       })
       .catch((e) => {
+        p.baseTs = prevBase;
         statusEl.textContent = "❌ " + e.message;
         if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
       });
   }
+
+  // 오프라인 → 온라인 복귀 시 저장 못 한 메모를 자동 저장
+  window.addEventListener("online", () => {
+    statusEl.textContent = "🌐 다시 연결됨";
+    panels.forEach((p, i) => { if (p && p.memoId && p.dirty) savePanel(i, true); });
+  });
+  window.addEventListener("offline", () => { statusEl.textContent = "📴 오프라인 — 편집 내용은 이 브라우저에 임시 저장됩니다."; });
+  // 저장 안 된 내용이 있는 채로 탭을 닫으면 임시 저장 후 확인창을 띄운다
+  window.addEventListener("beforeunload", (e) => {
+    const dirty = panels.filter(p => p && p.memoId && p.dirty);
+    if (!dirty.length) return;
+    dirty.forEach(writeDraft);
+    e.preventDefault();
+    e.returnValue = "";
+  });
+
+  // ── 폴더 / 태그 / 고정 ──
+  const metaPop = document.createElement("div");
+  metaPop.id = "meta-pop";
+  document.body.appendChild(metaPop);
+  let metaFor = null;
+  function openMetaPop(panelIdx, anchor) {
+    const p = panels[panelIdx];
+    if (!p || !p.memoId || !memos[p.memoId]) { statusEl.textContent = "⚠️ 먼저 메모를 선택하세요."; return; }
+    const id = p.memoId, m = memos[id];
+    metaFor = id;
+    const folders = [...new Set(Object.values(memos).map(x => x.folder).filter(Boolean))];
+    metaPop.innerHTML = `
+      <label>폴더</label><input type="text" class="m-folder" list="folder-list" maxlength="40" placeholder="예: 업무">
+      <datalist id="folder-list">${folders.map(f => `<option value="${esc(f)}">`).join("")}</datalist>
+      <label>태그 (쉼표로 구분)</label><input type="text" class="m-tags" maxlength="80" placeholder="예: 회의, 아이디어">
+      <label class="pin-row"><input type="checkbox" class="m-pin"> 📌 맨 위에 고정</label>`;
+    metaPop.querySelector(".m-folder").value = m.folder || "";
+    metaPop.querySelector(".m-tags").value = (m.tags || []).join(", ");
+    metaPop.querySelector(".m-pin").checked = !!m.pinned;
+    const r = anchor.getBoundingClientRect();
+    metaPop.style.display = "block";
+    metaPop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 256)) + "px";
+    metaPop.style.top = (r.bottom + 6) + "px";
+    metaPop.querySelector(".m-folder").focus();
+  }
+  function saveMeta() {
+    if (!metaFor || !memos[metaFor]) return;
+    const folder = metaPop.querySelector(".m-folder").value.trim();
+    const tags = [...new Set(metaPop.querySelector(".m-tags").value.split(",").map(t => t.trim().replace(/^#/, "")).filter(Boolean))];
+    const pinned = metaPop.querySelector(".m-pin").checked;
+    const id = metaFor;
+    update(ref(db, `memos/${id}`), { folder: folder || null, tags: tags.length ? tags : null, pinned: pinned || null })
+      .catch((e) => { statusEl.textContent = "❌ " + e.message; });
+    panels.forEach(pp => { if (pp && pp.memoId === id) pp.panelEl.querySelector(".meta-btn").classList.toggle("has", !!(folder || tags.length || pinned)); });
+  }
+  metaPop.addEventListener("change", saveMeta);
+  metaPop.addEventListener("keydown", (e) => { if (e.key === "Enter") { saveMeta(); metaPop.style.display = "none"; } if (e.key === "Escape") metaPop.style.display = "none"; });
+  document.addEventListener("mousedown", (e) => {
+    if (metaPop.style.display === "block" && !metaPop.contains(e.target) && !e.target.closest(".meta-btn")) { saveMeta(); metaPop.style.display = "none"; }
+  });
+
+  // ── 내보내기 / 백업 / 복원 ──
+  function memoToMarkdown(m) {
+    const meta = [];
+    if (m.folder) meta.push(`folder: ${m.folder}`);
+    if (m.tags && m.tags.length) meta.push(`tags: ${m.tags.join(", ")}`);
+    return (meta.length ? `---\n${meta.join("\n")}\n---\n\n` : "") + `# ${m.title || "제목 없음"}\n\n${m.content || ""}\n`;
+  }
+  function exportMemo(panelIdx, ext) {
+    const p = panels[panelIdx];
+    if (!p || !p.memoId) { statusEl.textContent = "⚠️ 먼저 메모를 선택하세요."; return; }
+    // 화면의 편집 중인 내용을 그대로 내보낸다
+    const m = { ...(memos[p.memoId] || {}), title: p.titleEl.value.trim() || "제목 없음", content: htmlToText(p.editorEl) };
+    downloadBlob(`${safeName(m.title)}.${ext}`, ext === "md" ? memoToMarkdown(m) : m.content, "text/plain;charset=utf-8");
+  }
+  async function buildBackup() {
+    const snap = await get(ref(db, "annotations"));
+    return { app: "memos", version: 1, exportedAt: new Date().toISOString(), memos, trash, docs, annotations: snap.val() || {} };
+  }
+  async function restoreBackup(file) {
+    let data;
+    try { data = JSON.parse(await file.text()); } catch (e) { alert("백업 파일을 읽을 수 없습니다."); return; }
+    if (!data || data.app !== "memos" || !data.memos) { alert("이 앱의 백업 파일이 아닙니다."); return; }
+    const newMemos = Object.keys(data.memos).filter(id => !memos[id]);
+    if (!confirm(`메모 ${Object.keys(data.memos).length}개 중 현재 없는 ${newMemos.length}개를 복원합니다.\n이미 있는 메모는 건드리지 않습니다. 계속할까요?`)) return;
+    const updates = {};
+    newMemos.forEach(id => { updates[`memos/${id}`] = data.memos[id]; });
+    // 주석은 지금도 존재하는 문서에 한해, 없는 것만 복원
+    let annCount = 0;
+    for (const [docId, list] of Object.entries(data.annotations || {})) {
+      if (!docs[docId]) continue;
+      for (const [aid, a] of Object.entries(list)) { updates[`annotations/${docId}/${aid}`] = a; annCount++; }
+    }
+    await update(ref(db), updates);
+    statusEl.textContent = `✅ 복원: 메모 ${newMemos.length}개, 주석 ${annCount}개`;
+    closeModal();
+  }
+  function openBackupModal() {
+    openModal("⬇ 내보내기 / 백업", (body) => {
+      const stack = document.createElement("div");
+      stack.className = "stack";
+      const note = document.createElement("div");
+      note.className = "sub";
+      note.style.color = "#888";
+      note.textContent = "문서 파일(PDF 등)은 Storage에 있어 백업에 포함되지 않고, 목록과 주석 정보만 담깁니다.";
+      const active = panels.findIndex(p => p && p.memoId);
+      stack.append(
+        modalButton("현재 메모 → .md 내려받기", () => exportMemo(active, "md")),
+        modalButton("현재 메모 → .txt 내려받기", () => exportMemo(active, "txt")),
+        modalButton("전체 메모 → ZIP (메모마다 .md 파일)", async () => {
+          await loadScript(CDN + "jszip/3.10.1/jszip.min.js");
+          const zip = new JSZip(), used = new Set();
+          Object.entries(memos).forEach(([id, m]) => {
+            let name = safeName(m.title), n = 2;
+            while (used.has(name)) name = `${safeName(m.title)} (${n++})`;
+            used.add(name);
+            zip.file(name + ".md", memoToMarkdown(m));
+          });
+          downloadBlob(`memos-${new Date().toISOString().slice(0, 10)}.zip`, await zip.generateAsync({ type: "blob" }));
+        }),
+        modalButton("전체 백업 → JSON (메모, 휴지통, 문서 목록, 주석)", async () => {
+          const b = await buildBackup();
+          downloadBlob(`memos-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(b, null, 1), "application/json");
+        }),
+        modalButton("백업 JSON 불러오기 (복원)", () => {
+          const inp = document.createElement("input");
+          inp.type = "file"; inp.accept = ".json,application/json";
+          inp.addEventListener("change", () => inp.files[0] && restoreBackup(inp.files[0]));
+          inp.click();
+        }),
+        note
+      );
+      if (active < 0) { stack.children[0].disabled = stack.children[1].disabled = true; }
+      body.appendChild(stack);
+    });
+  }
+  document.getElementById("backup-btn").addEventListener("click", openBackupModal);
 
   // ── 1분마다 자동저장 (변경된 패널만) ──
   setInterval(() => {
@@ -2031,43 +2443,165 @@
     }
   }
 
+  // ── 메모 목록: 고정 → 폴더별 → 미분류, 정렬/태그 필터 ──
+  let memoSort = "recent";
+  let tagFilter = null;
+  let collapsedFolders = new Set();
+  try { memoSort = localStorage.getItem("memoSort") || "recent"; collapsedFolders = new Set(JSON.parse(localStorage.getItem("collapsedFolders")) || []); } catch (e) {}
+  const sortSelect = document.getElementById("sort-select");
+  const tagFilterEl = document.getElementById("tag-filter");
+  sortSelect.value = memoSort;
+  sortSelect.addEventListener("change", () => {
+    memoSort = sortSelect.value;
+    try { localStorage.setItem("memoSort", memoSort); } catch (e) {}
+    renderList();
+  });
+
   function renderList() {
     memoListEl.innerHTML = "";
-    const ids = Object.keys(memos);
+    // 태그 필터 칩
+    const allTags = [...new Set(Object.values(memos).flatMap(m => m.tags || []))].sort();
+    if (tagFilter && !allTags.includes(tagFilter)) tagFilter = null;
+    tagFilterEl.innerHTML = "";
+    allTags.forEach(t => {
+      const chip = document.createElement("span");
+      chip.className = "tag-chip" + (t === tagFilter ? " on" : "");
+      chip.textContent = "#" + t;
+      chip.addEventListener("click", () => { tagFilter = tagFilter === t ? null : t; renderList(); });
+      tagFilterEl.appendChild(chip);
+    });
+
+    const ids = Object.keys(memos).filter(id => !tagFilter || (memos[id].tags || []).includes(tagFilter));
     if (ids.length === 0) {
-      memoListEl.innerHTML = '<div style="padding:10px 14px;color:#555;font-size:11px;">메모 없음</div>';
+      memoListEl.innerHTML = `<div style="padding:10px 14px;color:#555;font-size:11px;">${Object.keys(memos).length ? "조건에 맞는 메모 없음" : "메모 없음"}</div>`;
       return;
     }
+    const cmp = {
+      recent:  (a, b) => (memos[b].ts || 0) - (memos[a].ts || 0),
+      created: (a, b) => (memos[b].created || 0) - (memos[a].created || 0),
+      title:   (a, b) => (memos[a].title || "").localeCompare(memos[b].title || "", "ko")
+    }[memoSort];
+    ids.sort(cmp);
+
     const id0 = panels[0] ? panels[0].memoId : null;
     const id1 = panels[1] ? panels[1].memoId : null;
-    ids.forEach(id => {
+    const addItem = (id) => {
       const m = memos[id];
       const item = document.createElement("div");
       const inMain = id === id0, inSub = id === id1;
       item.className = "memo-item" + (inMain && inSub ? " active-both" : inMain ? " active-main" : inSub ? " active-sub" : "");
       const titleSpan = document.createElement("span");
       titleSpan.className = "memo-item-title";
-      titleSpan.textContent = m.title || "제목 없음";
+      titleSpan.textContent = (m.pinned ? "📌 " : "") + (m.title || "제목 없음");
+      item.appendChild(titleSpan);
+      if (m.tags && m.tags.length) {
+        const tg = document.createElement("span");
+        tg.className = "memo-item-tags";
+        tg.textContent = m.tags.map(t => "#" + t).join(" ");
+        item.appendChild(tg);
+      }
       const delBtn = document.createElement("button");
       delBtn.className = "delete-btn";
       delBtn.textContent = "×";
       delBtn.addEventListener("click", (e) => { e.stopPropagation(); deleteMemo(id); });
-      item.appendChild(titleSpan);
       item.appendChild(delBtn);
       item.addEventListener("click", () => sidebarClickMemo(id));
       memoListEl.appendChild(item);
-    });
+    };
+    const addHead = (label, key) => {
+      const h = document.createElement("div");
+      h.className = "folder-head";
+      const closed = collapsedFolders.has(key);
+      h.textContent = (closed ? "▸ " : "▾ ") + label;
+      h.addEventListener("click", () => {
+        closed ? collapsedFolders.delete(key) : collapsedFolders.add(key);
+        try { localStorage.setItem("collapsedFolders", JSON.stringify([...collapsedFolders])); } catch (e) {}
+        renderList();
+      });
+      memoListEl.appendChild(h);
+      return closed;
+    };
+
+    const pinned = ids.filter(id => memos[id].pinned);
+    const rest = ids.filter(id => !memos[id].pinned);
+    const folders = [...new Set(rest.map(id => memos[id].folder).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
+    if (pinned.length && !addHead("📌 고정", "__pinned")) pinned.forEach(addItem);
+    if (!folders.length) {
+      if (pinned.length && rest.length && addHead("메모", "__rest")) return;
+      rest.forEach(addItem);
+      return;
+    }
+    for (const f of folders) {
+      if (!addHead("📁 " + f, "f:" + f)) rest.filter(id => memos[id].folder === f).forEach(addItem);
+    }
+    const none = rest.filter(id => !memos[id].folder);
+    if (none.length && !addHead("미분류", "__none")) none.forEach(addItem);
   }
 
   newBtn.addEventListener("click", () => {
     const newRef = push(memosRef);
-    set(newRef, { title: "새 메모", content: "" }).then(() => loadMemoInPanel(0, newRef.key));
+    const now = Date.now();
+    set(newRef, { title: "새 메모", content: "", created: now, ts: now }).then(() => loadMemoInPanel(0, newRef.key));
   });
 
+  // 삭제 = 휴지통으로 이동 (30일 뒤 자동 삭제)
   function deleteMemo(id) {
-    if (!confirm("이 메모를 삭제할까요?")) return;
-    remove(ref(db, `memos/${id}`));
+    if (!confirm("이 메모를 휴지통으로 옮길까요?")) return;
+    const m = memos[id];
+    if (!m) return;
+    panels.forEach((p) => {
+      if (p && p.memoId === id) {
+        p.memoId = null; p.dirty = false;
+        p.titleEl.value = "";
+        p.editorEl.innerHTML = textToHtml("");
+        p.editorEl.setAttribute("data-placeholder", "메모를 선택하세요...");
+        clearTimeout(p.draftTimer);
+      }
+    });
+    clearDraft(id);
+    set(ref(db, `trash/${id}`), { ...m, deletedAt: Date.now() })
+      .then(() => remove(ref(db, `memos/${id}`)))
+      .catch((e) => { statusEl.textContent = "❌ " + e.message; });
   }
+
+  let trash = {};
+  const trashRef = ref(db, "trash");
+  const trashBtn = document.getElementById("trash-btn");
+  function openTrashModal() {
+    const render = (body, foot) => {
+      body.innerHTML = "";
+      foot.innerHTML = "";
+      const ids = Object.keys(trash).sort((a, b) => trash[b].deletedAt - trash[a].deletedAt);
+      if (!ids.length) { body.innerHTML = '<div class="empty">휴지통이 비어 있습니다.</div>'; foot.hidden = true; return; }
+      ids.forEach(id => {
+        const t = trash[id];
+        const row = document.createElement("div");
+        row.className = "row";
+        const label = document.createElement("div");
+        label.className = "t";
+        label.innerHTML = '<div></div><div class="sub"></div>';
+        label.firstChild.textContent = t.title || "제목 없음";
+        const left = Math.max(0, 30 - Math.floor((Date.now() - t.deletedAt) / 86400000));
+        label.lastChild.textContent = `삭제 ${new Date(t.deletedAt).toLocaleString()} · ${left}일 뒤 영구 삭제`;
+        row.appendChild(label);
+        row.appendChild(modalButton("복원", () => restoreFromTrash(id)));
+        row.appendChild(modalButton("영구삭제", () => { if (confirm("영구 삭제하면 되돌릴 수 없습니다. 삭제할까요?")) remove(ref(db, `trash/${id}`)); }, "danger"));
+        body.appendChild(row);
+      });
+      foot.hidden = false;
+      foot.appendChild(modalButton("휴지통 비우기", () => { if (confirm("휴지통의 모든 메모를 영구 삭제할까요?")) remove(trashRef); }, "danger"));
+    };
+    openModal("🗑 휴지통", render);
+    modalRender = render;
+  }
+  let modalRender = null;
+  function restoreFromTrash(id) {
+    const { deletedAt, ...m } = trash[id] || {};
+    if (!trash[id]) return;
+    const target = memos[id] ? push(memosRef).key : id;   // 같은 ID가 이미 있으면 새 ID로
+    set(ref(db, `memos/${target}`), m).then(() => remove(ref(db, `trash/${id}`)));
+  }
+  trashBtn.addEventListener("click", openTrashModal);
 
   // 메모·문서 목록이 모두 도착하면 새로고침 전 상태(분할 여부, 각 패널의 메모/문서)를 한 번 복원한다.
   let memosReady = false, docsReady = false, restored = false;
@@ -2091,17 +2625,35 @@
   unsubs.push(onValue(memosRef, (snapshot) => {
     memos = snapshot.val() || {};
     statusEl.textContent = "✅ 연결됨";
-    // 열려있는 패널의 pins 갱신
+    // 열려있는 패널: 다른 기기/탭에서 바뀐 내용은 편집 중이 아니면 바로 반영, 편집 중이면 충돌 경고
     panels.forEach((p, i) => {
-      if (p && p.memoId && memos[p.memoId]) {
-        const m = memos[p.memoId];
-        if (m.pins) pins[p.memoId] = new Set(m.pins);
+      if (!p || !p.memoId || !memos[p.memoId]) return;
+      const m = memos[p.memoId];
+      if (m.pins) pins[p.memoId] = new Set(m.pins);
+      if ((m.ts || 0) > p.baseTs) {
+        if (p.dirty) p.panelEl.querySelector(".conflict-note").hidden = false;
+        else if (!p.docId) loadMemoInPanel(i, p.memoId, { sync: true });
       }
     });
     renderList();
     memosReady = true;
     tryRestore();
   }, (e) => { statusEl.textContent = "❌ " + e.message; memosReady = true; tryRestore(); }));
+  }
+
+  // ── 휴지통 구독 (30일 지난 항목은 자동 삭제) ──
+  function startTrashSync() {
+    let purged = false;
+    unsubs.push(onValue(ref(db, "trash"), (snap) => {
+      trash = snap.val() || {};
+      trashBtn.textContent = "🗑 휴지통" + (Object.keys(trash).length ? ` (${Object.keys(trash).length})` : "");
+      if (!purged) {
+        purged = true;
+        Object.entries(trash).forEach(([id, t]) => { if (Date.now() - (t.deletedAt || 0) > 30 * 86400000) remove(ref(db, `trash/${id}`)); });
+      }
+      if (modalEl && modalRender && modalEl.querySelector(".modal-head span").textContent.includes("휴지통"))
+        modalRender(modalEl.querySelector(".modal-body"), modalEl.querySelector(".modal-foot"));
+    }, () => {}));
   }
 
   // ── 문서 목록 구독 ──
@@ -2125,7 +2677,7 @@
   onAuthStateChanged(auth, (user) => {
     if (user) {
       lockScreen.style.display = "none";
-      if (!synced) { synced = true; startSync(); startDocSync(); subscribeUsage(); }
+      if (!synced) { synced = true; startSync(); startDocSync(); startTrashSync(); subscribeUsage(); }
     } else {
       lockScreen.style.display = "flex";
       statusEl.textContent = "🔒 로그인 필요";
