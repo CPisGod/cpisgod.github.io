@@ -96,6 +96,18 @@
     #theme-toggle:hover { background: #333; color: #bbb; }
 
     #memo-list { flex: 1; overflow-y: auto; min-height: 60px; }
+    #search-input {
+      margin: 10px 10px 0; width: calc(100% - 20px); background: #2a2a2a; color: #ddd; border: 1px solid #3a3a3a;
+      padding: 7px 8px; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; outline: none;
+    }
+    #search-input:focus { border-color: #5a9a5a; }
+    .search-group { padding: 6px 14px; font-size: 10px; letter-spacing: 1px; color: #777; background: #1e1e1e; border-bottom: 1px solid #2a2a2a; }
+    .search-item { padding: 8px 14px; border-bottom: 1px solid #2e2e2e; cursor: pointer; font-size: 12px; color: #bbb; }
+    .search-item:hover { background: #2a2a2a; }
+    .search-item .s-title { color: #ddd; }
+    .search-item .s-snip { color: #888; font-size: 11px; margin-top: 2px; line-height: 1.5; word-break: break-all; }
+    .search-item .s-snip b { color: #f0c060; font-weight: 500; }
+    .search-note { padding: 8px 14px; font-size: 11px; color: #666; }
     .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 10px 8px; }
     .side-grid button {
       background: #2a2a2a; color: #888; border: 1px solid #3a3a3a; padding: 6px 0;
@@ -353,6 +365,13 @@
     .modal-box .row .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
     .modal-box .row .sub { color: #888; font-size: 11px; }
     .modal-box .stack { display: flex; flex-direction: column; gap: 8px; }
+    .modal-box .sec { margin: 12px 0 4px; font-weight: 500; color: #ccc; }
+    .modal-box .ann-row { display: flex; gap: 8px; padding: 7px 4px; border-bottom: 1px solid #333; cursor: pointer; }
+    .modal-box .ann-row:hover { background: #2e2e2e; }
+    .modal-box .ann-row .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .modal-box .ann-row .q { color: #ddd; }
+    .modal-box .ann-row .n { color: #f0b86e; margin-top: 2px; white-space: pre-wrap; }
+    .modal-box .ann-row .pg { color: #888; font-size: 11px; }
     .modal-box .empty { color: #888; text-align: center; padding: 20px; }
 
     .memo-editor.font-consolas,
@@ -616,12 +635,15 @@
 
 <div id="sidebar">
   <div id="sidebar-header">MEMOS <span id="mobile-toggle-icon">▾</span></div>
+  <input id="search-input" type="search" placeholder="🔍 메모·문서 검색 (Ctrl+K)" autocomplete="off" />
   <button id="new-btn">+ 새 메모</button>
   <button id="split-toggle">⊟ 분할화면</button>
   <button id="theme-toggle">🌙 다크모드</button>
   <div class="side-grid">
     <button id="trash-btn" title="삭제한 메모 복구">🗑 휴지통</button>
     <button id="backup-btn" title="내보내기 / 백업 / 복원">⬇ 백업</button>
+    <button id="anns-btn" title="모든 문서의 하이라이트/메모 모아보기">💬 주석 모음</button>
+    <button id="lock-btn" title="일정 시간 사용하지 않으면 자동 로그아웃">⏱ 자동잠금</button>
   </div>
   <button id="logout-btn" style="margin:0 10px 10px;background:#2a2a2a;color:#888;border:1px solid #3a3a3a;padding:6px 0;font-family:'Noto Sans KR',sans-serif;font-size:11px;cursor:pointer;width:calc(100% - 20px);">로그아웃</button>
   <div id="memo-controls">
@@ -1162,6 +1184,7 @@
       const vpCss = page.getViewport({ scale });
       const pageEl = document.createElement("div");
       pageEl.className = "pdf-page ann-page";
+      pageEl.dataset.n = n;
       pageEl.style.width = vpCss.width + "px";
       pageEl.style.height = vpCss.height + "px";
       pageEl._page = page; pageEl._scale = scale; pageEl._dpr = dpr;
@@ -1611,6 +1634,7 @@
         }, () => {});
       } else p.annsLoaded = true;
       // 읽던 위치 복원 (바로 이동할 대상이 있으면 그쪽 우선)
+      indexDocText(p, docId, d);
       if (pos && !p.pendingJump) requestAnimationFrame(() => { body.scrollTop = pos.r * body.scrollHeight; p.posReady = true; });
       else p.posReady = true;
       processPendingJump(p);
@@ -1659,6 +1683,23 @@
     }, 500);
   }
 
+  // 전체 검색용 색인: 문서를 처음 열 때 텍스트를 DB(docText/{id})에 저장해 둔다 (PDF는 쪽별)
+  function indexDocText(p, docId, d) {
+    if (d.local || d.indexed || p.docKind === "image") return;
+    const root = textRootOf(p);
+    if (!root) return;
+    let pages = p.docKind === "pdf"
+      ? Array.from(root.querySelectorAll(".pdf-page")).map(pg => pg.textContent)
+      : [root.textContent];
+    let total = 0;   // 너무 큰 문서는 앞부분만 (약 1.5M자)
+    pages = pages.map(t => { const keep = Math.max(0, 1500000 - total); total += t.length; return t.slice(0, keep); });
+    if (!pages.some(t => t.trim())) return;   // 글자가 없는 스캔본은 색인할 것이 없음
+    set(ref(db, `docText/${docId}`), { pages })
+      .then(() => update(ref(db, `docs/${docId}`), { indexed: true }))
+      .then(() => { if (docTextCache) docTextCache[docId] = { pages }; })
+      .catch(() => {});
+  }
+
   // 특정 위치로 문서 열기: jump = { ann: id } | { page: n } | { find: "검색어", page?: n }
   function openDocAt(panelIdx, docId, jump) {
     const p = panels[panelIdx];
@@ -1677,15 +1718,18 @@
     }
     p.pendingJump = null;
     p.posReady = true;
-    if (j.page) jumpPage(p, j.page);
-    if (j.find) { openFind(p, j.find); }
+    if (j.find) {
+      openFind(p, j.find);
+      if (j.page) selectFindOnPage(p, j.page);
+    } else if (j.page) jumpPage(p, j.page);
   }
 
   // DOCS 클릭: 문서를 메모 위가 아니라 오른쪽 패널에 띄운다 (왼쪽=메모, 오른쪽=문서)
-  function sidebarClickDoc(docId) {
+  function openDocInRight(docId, jump) {
     if (!splitOn) setSplit(true);
-    openDoc(1, docId);
+    if (jump) openDocAt(1, docId, jump); else openDoc(1, docId);
   }
+  function sidebarClickDoc(docId) { openDocInRight(docId); }
 
   // ── 하이라이트 / 메모(주석) ──
   // 주석 위치는 문서 텍스트 전체(.doc-textroot의 텍스트 노드 이어붙인 문자열)에서의 글자 오프셋으로 저장하고,
@@ -1800,7 +1844,11 @@
     const start = pre.toString().length + (quote.length - quote.trimStart().length);
     quote = quote.trim();
     if (!quote || quote.length > 5000) return null;
-    return { start, end: start + quote.length, quote };
+    const sc = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement;
+    const pgEl = sc && sc.closest(".pdf-page");
+    const out = { start, end: start + quote.length, quote };
+    if (pgEl) out.page = parseInt(pgEl.dataset.n, 10);   // 인용/내보내기에서 쪽 번호로 쓴다
+    return out;
   }
 
   function colorDots(current) {
@@ -1820,7 +1868,7 @@
 
   function showCreatePop(p, sel, rect) {
     annPopState = { p, mode: "create", sel };
-    annPop.innerHTML = colorDots("") + '<button class="ann-btn" data-act="note">💬 메모</button>';
+    annPop.innerHTML = colorDots("") + '<button class="ann-btn" data-act="note">💬 메모</button><button class="ann-btn" data-act="quote" title="왼쪽 메모에 출처와 함께 인용">📋 인용</button>';
     placePop(rect);
   }
 
@@ -1829,7 +1877,7 @@
     if (!a) return;
     saveNoteNow();
     annPopState = { p, mode: "edit", annId };
-    annPop.innerHTML = colorDots(a.color) + '<button class="ann-btn danger" data-act="del" title="삭제">🗑</button>' +
+    annPop.innerHTML = colorDots(a.color) + (a.type === "rect" ? "" : '<button class="ann-btn" data-act="quote" title="왼쪽 메모에 출처와 함께 인용">📋</button>') + '<button class="ann-btn danger" data-act="del" title="삭제">🗑</button>' +
       '<textarea class="ann-note" rows="3" placeholder="메모를 입력하세요..."></textarea><div class="ann-quote"></div>';
     annPop.querySelector(".ann-note").value = a.note || "";
     annPop.querySelector(".ann-quote").textContent = a.type === "rect" ? `▭ 영역 (${a.page}쪽)` : "“" + trunc(a.quote, 80) + "”";
@@ -1852,12 +1900,36 @@
     update(ref(db, `${annPath(st.p)}/${st.annId}`), { note: ta.value }).catch((e) => { statusEl.textContent = "❌ " + e.message; });
   }
 
+  // 문서에서 고른 문장을 (문서가 아닌) 열려 있는 메모 끝에 "> 인용 / — 출처" 형태로 붙인다
+  function quoteToMemo(docPanel, text, page) {
+    const idx = panels.findIndex(pp => pp && pp !== docPanel && pp.memoId && !pp.docId);
+    const target = idx >= 0 ? idx : panels.findIndex(pp => pp && pp.memoId && !pp.docId);
+    if (target < 0) { statusEl.textContent = "⚠️ 인용할 메모를 먼저 열어주세요 (분할화면에서 한쪽에 메모를 여세요)."; return; }
+    const tp = panels[target];
+    const d = getDoc(docPanel.docId);
+    const src = `— ${d ? d.name : "문서"}${page ? " p." + page : ""}`;
+    const lines = ["> " + text.replace(/\s+/g, " ").trim(), src];
+    const last = tp.editorEl.querySelector("p:last-child");
+    const lastEmpty = last && (last.innerHTML === "<br>" || last.textContent === "");
+    lines.forEach((ln, i) => {
+      let pe;
+      if (i === 0 && lastEmpty) { pe = last; pe.textContent = ln; }
+      else { pe = document.createElement("p"); pe.textContent = ln; tp.editorEl.appendChild(pe); }
+    });
+    const blank = document.createElement("p");
+    blank.innerHTML = "<br>";
+    tp.editorEl.appendChild(blank);
+    onEditorChanged(target);
+    tp.editorEl.scrollTop = tp.editorEl.scrollHeight;
+    statusEl.textContent = "📋 메모에 인용했습니다 (저장 필요)";
+  }
+
   function createAnn(p, sel, color, openEdit) {
     const r = push(ref(db, annPath(p)));
     if (openEdit) p.pendingEdit = r.key;
     window.getSelection().removeAllRanges();
     hideAnnPop();
-    set(r, { start: sel.start, end: sel.end, quote: sel.quote, color, note: "", ts: Date.now() })
+    set(r, { start: sel.start, end: sel.end, quote: sel.quote, color, note: "", ts: Date.now(), ...(sel.page ? { page: sel.page } : {}) })
       .catch((e) => { statusEl.textContent = "❌ " + e.message; });
   }
 
@@ -1873,6 +1945,19 @@
       else update(ref(db, `${annPath(st.p)}/${st.annId}`), { color: dot.dataset.color });
     } else if (btn && btn.dataset.act === "note" && st.mode === "create") {
       createAnn(st.p, st.sel, "y", true);
+    } else if (btn && btn.dataset.act === "quote") {
+      const a = st.mode === "create" ? st.sel : st.p.anns[st.annId];
+      if (a) {
+        let page = a.page;
+        if (!page && st.mode === "edit") {
+          const mk = st.p.panelEl.querySelector(`mark.ann[data-id="${st.annId}"]`);
+          const pgEl = mk && mk.closest(".pdf-page");
+          if (pgEl) page = parseInt(pgEl.dataset.n, 10);
+        }
+        quoteToMemo(st.p, a.quote, page);
+      }
+      if (st.mode === "create") window.getSelection().removeAllRanges();
+      hideAnnPop();
     } else if (btn && btn.dataset.act === "del" && st.mode === "edit") {
       const { p, annId } = st;
       hideAnnPop();
@@ -2030,6 +2115,13 @@
     if (ms[0]) ms[0].scrollIntoView({ block: "center" });
     c.textContent = `${f.cur + 1}/${f.n}`;
   }
+  // 검색 결과에서 들어왔을 때: 해당 쪽의 첫 번째 일치 항목을 현재 위치로
+  function selectFindOnPage(p, page) {
+    const m = p.panelEl.querySelector(`.pdf-page[data-n="${page}"] mark.find`);
+    if (!m || !p.find.n) return;
+    p.find.cur = parseInt(m.dataset.id.slice(1), 10) - 1;
+    findStep(p, 1);
+  }
   function openFind(p, q) {
     const bar = p.panelEl.querySelector(".find-bar");
     const inp = bar.querySelector(".find-input");
@@ -2096,6 +2188,8 @@
     if (d.local) { delete localDocs[id]; renderDocList(); return; }
     try { await deleteObject(sRef(storage, d.path)); } catch (e) {}
     remove(ref(db, `annotations/${id}`));
+    remove(ref(db, `docText/${id}`));
+    if (docTextCache) delete docTextCache[id];
     remove(ref(db, `docs/${id}`));
   }
 
@@ -2332,6 +2426,80 @@
   }
   document.getElementById("backup-btn").addEventListener("click", openBackupModal);
 
+  // ── 주석 모음: 모든 문서의 하이라이트/메모를 한곳에서 보고, 마크다운으로 복사/저장 ──
+  const COLOR_EMOJI = { y: "🟡", g: "🟢", b: "🔵", p: "🩷" };
+  async function openAnnsModal() {
+    let all = {};
+    try { all = (await get(ref(db, "annotations"))).val() || {}; }
+    catch (e) { statusEl.textContent = "❌ " + e.message; return; }
+    const entries = [];
+    for (const [docId, list] of Object.entries(all)) {
+      if (!docs[docId]) continue;
+      for (const [id, a] of Object.entries(list)) entries.push({ docId, id, ...a });
+    }
+    const pos = (a) => a.type === "rect" ? 1e9 + (a.page || 0) : (a.page || 0) * 1e6 + (a.start || 0);
+    entries.sort((x, y) => docs[x.docId].name.localeCompare(docs[y.docId].name, "ko") || pos(x) - pos(y));
+    const label = (a) => a.type === "rect" ? `▭ ${a.page}쪽 영역` : `${a.page ? `p.${a.page} ` : ""}“${a.quote}”`;
+    let onlyNotes = false;
+    const visible = () => entries.filter(a => !onlyNotes || a.note);
+    const toMarkdown = () => {
+      const lines = [`# 주석 모음 (${new Date().toLocaleDateString()})`];
+      let cur = null;
+      for (const a of visible()) {
+        if (a.docId !== cur) { cur = a.docId; lines.push("", `## ${docs[cur].name}`, ""); }
+        lines.push(`- ${COLOR_EMOJI[a.color] || "🟡"} ${a.type === "rect" ? label(a) : (a.page ? `(p.${a.page}) ` : "") + `"${a.quote.replace(/\s+/g, " ")}"`}${a.note ? ` — ${a.note.replace(/\n+/g, " ")}` : ""}`);
+      }
+      return lines.join("\n") + "\n";
+    };
+    openModal("💬 주석 모음", (body, foot) => {
+      const render = () => {
+        body.innerHTML = "";
+        const bar = document.createElement("label");
+        bar.style.cssText = "display:flex;gap:6px;align-items:center;margin-bottom:6px;cursor:pointer";
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = onlyNotes;
+        cb.addEventListener("change", () => { onlyNotes = cb.checked; render(); });
+        bar.append(cb, "메모가 있는 것만 보기");
+        body.appendChild(bar);
+        const list = visible();
+        if (!list.length) { const e = document.createElement("div"); e.className = "empty"; e.textContent = entries.length ? "조건에 맞는 주석이 없습니다." : "아직 하이라이트나 메모가 없습니다."; body.appendChild(e); return; }
+        let cur = null;
+        for (const a of list) {
+          if (a.docId !== cur) { cur = a.docId; const h = document.createElement("div"); h.className = "sec"; h.textContent = "📄 " + docs[cur].name; body.appendChild(h); }
+          const row = document.createElement("div");
+          row.className = "ann-row";
+          const dot = document.createElement("span");
+          dot.className = "dot";
+          dot.style.background = ANN_COLORS[a.color] || ANN_COLORS.y;
+          const t = document.createElement("div");
+          const q = document.createElement("div");
+          q.className = "q";
+          q.textContent = trunc(label(a), 140);
+          t.appendChild(q);
+          if (a.note) { const n = document.createElement("div"); n.className = "n"; n.textContent = a.note; t.appendChild(n); }
+          row.append(dot, t);
+          row.addEventListener("click", () => { closeModal(); openDocInRight(a.docId, { ann: a.id }); });
+          body.appendChild(row);
+        }
+      };
+      render();
+      foot.hidden = false;
+      foot.append(
+        modalButton("📋 마크다운 복사", async () => {
+          try { await navigator.clipboard.writeText(toMarkdown()); statusEl.textContent = "📋 주석 모음을 복사했습니다."; } catch (e) { statusEl.textContent = "❌ 복사 실패: " + e.message; }
+        }),
+        modalButton("📝 새 메모로 저장", () => {
+          const r = push(memosRef), now = Date.now();
+          set(r, { title: `주석 모음 ${new Date().toLocaleDateString()}`, content: toMarkdown(), created: now, ts: now })
+            .then(() => { closeModal(); loadMemoInPanel(0, r.key); });
+        }),
+        modalButton("⬇ .md", () => downloadBlob(`주석 모음 ${new Date().toISOString().slice(0, 10)}.md`, toMarkdown(), "text/plain;charset=utf-8"))
+      );
+    });
+  }
+  document.getElementById("anns-btn").addEventListener("click", openAnnsModal);
+
   // ── 1분마다 자동저장 (변경된 패널만) ──
   setInterval(() => {
     panels.forEach((p, i) => {
@@ -2348,6 +2516,14 @@
       });
       const anyFocused = panels.some(p => p && (document.activeElement === p.editorEl || document.activeElement === p.titleEl));
       if (!anyFocused && panels[0] && panels[0].memoId) savePanel(0);
+    }
+
+    // Ctrl(Cmd) + K: 전체 검색
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      if (window.innerWidth <= 768) sidebarEl.classList.remove("collapsed");
+      searchInput.focus();
+      searchInput.select();
     }
 
     // Ctrl(Cmd) + F: 열려 있는 문서 안에서 검색 (문서가 없으면 브라우저 기본 검색)
@@ -2443,6 +2619,127 @@
     }
   }
 
+  // ── 전체 검색: 메모(제목/본문/폴더/태그) + 문서 이름 + 색인된 문서 본문 ──
+  const searchInput = document.getElementById("search-input");
+  let searchQuery = "";
+  let searchSeq = 0;
+  let docTextCache = null;
+  async function ensureDocText() {
+    if (docTextCache) return docTextCache;
+    try { docTextCache = (await get(ref(db, "docText"))).val() || {}; } catch (e) { docTextCache = {}; }
+    return docTextCache;
+  }
+  // 일치 부분을 강조한 요약문 (앞뒤 문맥 포함)
+  function snippetEl(text, q) {
+    const flat = text.replace(/\s+/g, " ");
+    const i = flat.toLowerCase().indexOf(q.toLowerCase());
+    const el = document.createElement("div");
+    el.className = "s-snip";
+    if (i < 0) { el.textContent = trunc(flat, 90); return el; }
+    const a = Math.max(0, i - 30), b = Math.min(flat.length, i + q.length + 60);
+    el.append((a > 0 ? "…" : "") + flat.slice(a, i));
+    const bold = document.createElement("b");
+    bold.textContent = flat.slice(i, i + q.length);
+    el.append(bold, flat.slice(i + q.length, b) + (b < flat.length ? "…" : ""));
+    return el;
+  }
+  function focusMemoMatch(panelIdx, q) {
+    const p = panels[panelIdx];
+    if (!p) return;
+    const lq = q.toLowerCase();
+    const w = document.createTreeWalker(p.editorEl, NodeFilter.SHOW_TEXT);
+    while (w.nextNode()) {
+      const i = w.currentNode.nodeValue.toLowerCase().indexOf(lq);
+      if (i < 0) continue;
+      const r = document.createRange();
+      r.setStart(w.currentNode, i);
+      r.setEnd(w.currentNode, i + q.length);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+      w.currentNode.parentElement.scrollIntoView({ block: "center" });
+      return;
+    }
+  }
+  async function renderSearchResults() {
+    const q = searchQuery, lq = q.toLowerCase(), seq = ++searchSeq;
+    const has = (t) => (t || "").toLowerCase().includes(lq);
+    const group = (label) => { const g = document.createElement("div"); g.className = "search-group"; g.textContent = label; return g; };
+    const item = (title) => {
+      const it = document.createElement("div");
+      it.className = "search-item";
+      const t = document.createElement("div");
+      t.className = "s-title";
+      t.textContent = title;
+      it.appendChild(t);
+      return it;
+    };
+
+    // 메모
+    const memoHits = Object.keys(memos)
+      .filter(id => { const m = memos[id]; return has(m.title) || has(m.content) || has(m.folder) || (m.tags || []).some(has); })
+      .sort((a, b) => (has(memos[b].title) - has(memos[a].title)) || ((memos[b].ts || 0) - (memos[a].ts || 0)))
+      .slice(0, 40);
+    // 문서 (이름은 즉시, 본문은 색인을 불러온 뒤)
+    const text = await ensureDocText();
+    if (seq !== searchSeq) return;   // 그 사이 검색어가 바뀜
+    const docIds = Object.keys(docs);
+    const unindexed = docIds.filter(id => !docs[id].indexed && !/\.(png|jpe?g|gif|webp|bmp)$/i.test(docs[id].name)).length;
+
+    memoListEl.innerHTML = "";
+    memoListEl.appendChild(group(`메모 (${memoHits.length})`));
+    if (!memoHits.length) { const n = document.createElement("div"); n.className = "search-note"; n.textContent = "일치하는 메모 없음"; memoListEl.appendChild(n); }
+    memoHits.forEach(id => {
+      const m = memos[id];
+      const it = item((m.pinned ? "📌 " : "") + (m.title || "제목 없음") + (m.folder ? `  · 📁 ${m.folder}` : ""));
+      if (has(m.content)) it.appendChild(snippetEl(m.content, q));
+      it.addEventListener("click", () => {
+        sidebarClickMemo(id);
+        const idx = panels.findIndex(pp => pp && pp.memoId === id && !pp.docId);
+        if (idx >= 0) setTimeout(() => focusMemoMatch(idx, q), 60);
+      });
+      memoListEl.appendChild(it);
+    });
+
+    memoListEl.appendChild(group("문서"));
+    let shown = 0;
+    for (const id of docIds) {
+      const d = docs[id];
+      const pages = (text[id] && text[id].pages) || [];
+      const hits = [];
+      pages.forEach((t, i) => { if (has(t)) hits.push({ page: i + 1, t }); });
+      const nameHit = has(d.name);
+      if (!hits.length && !nameHit) continue;
+      shown++;
+      const it = item("📄 " + d.name + (hits.length ? (pages.length > 1 ? `  · ${hits.length}쪽에서 발견` : "  · 본문 일치") : ""));
+      memoListEl.appendChild(it);
+      it.addEventListener("click", () => openDocInRight(id, hits.length ? { page: pages.length > 1 ? hits[0].page : undefined, find: q } : undefined));
+      hits.slice(0, 3).forEach(h => {
+        const sub = document.createElement("div");
+        sub.style.marginTop = "4px";
+        if (pages.length > 1) { const pg = document.createElement("span"); pg.style.cssText = "color:#6a9fd8;font-size:10px;margin-right:6px"; pg.textContent = `p.${h.page}`; sub.appendChild(pg); }
+        sub.appendChild(snippetEl(h.t, q));
+        sub.addEventListener("click", (e) => { e.stopPropagation(); openDocInRight(id, { page: pages.length > 1 ? h.page : undefined, find: q }); });
+        it.appendChild(sub);
+      });
+    }
+    if (!shown) { const n = document.createElement("div"); n.className = "search-note"; n.textContent = "일치하는 문서 없음"; memoListEl.appendChild(n); }
+    if (unindexed) {
+      const n = document.createElement("div");
+      n.className = "search-note";
+      n.textContent = `※ 아직 한 번도 열지 않은 문서 ${unindexed}개는 본문이 검색되지 않습니다. 열어보면 자동으로 색인됩니다.`;
+      memoListEl.appendChild(n);
+    }
+  }
+  let searchTimer = null;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { searchQuery = searchInput.value.trim(); renderList(); }, 250);
+  });
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { searchInput.value = ""; searchQuery = ""; renderList(); searchInput.blur(); }
+  });
+
   // ── 메모 목록: 고정 → 폴더별 → 미분류, 정렬/태그 필터 ──
   let memoSort = "recent";
   let tagFilter = null;
@@ -2458,6 +2755,7 @@
   });
 
   function renderList() {
+    if (searchQuery) { renderSearchResults(); return; }
     memoListEl.innerHTML = "";
     // 태그 필터 칩
     const allTags = [...new Set(Object.values(memos).flatMap(m => m.tags || []))].sort();
@@ -2670,12 +2968,38 @@
   rebuildPanels();
 
   // ── 인증 상태에 따라 잠금/구독 ──
-  document.getElementById("logout-btn").addEventListener("click", async () => {
+  // 로그아웃: 저장 안 된 내용은 저장을 시도하고, 이 브라우저에 남은 문서 사본(캐시)은 지운다
+  async function doLogout() {
+    panels.forEach((p, i) => { if (p && p.memoId && p.dirty) savePanel(i, true); });
+    await new Promise(r => setTimeout(r, 800));
+    try { await caches.delete("docs-v1"); } catch (e) {}
     await signOut(auth);
     location.reload();  // 메모리의 데이터까지 깨끗이 비움
+  }
+  document.getElementById("logout-btn").addEventListener("click", doLogout);
+
+  // ── 자동 잠금: 일정 시간 아무 조작이 없으면 로그아웃 ──
+  const IDLE_OPTIONS = [0, 5, 15, 30, 60];   // 분 (0 = 사용 안 함)
+  let idleMinutes = 30;
+  try { const v = parseInt(localStorage.getItem("idleMinutes"), 10); if (IDLE_OPTIONS.includes(v)) idleMinutes = v; } catch (e) {}
+  const lockBtn = document.getElementById("lock-btn");
+  const renderLockBtn = () => { lockBtn.textContent = idleMinutes ? `⏱ 자동잠금 ${idleMinutes}분` : "⏱ 자동잠금 끔"; };
+  renderLockBtn();
+  lockBtn.addEventListener("click", () => {
+    idleMinutes = IDLE_OPTIONS[(IDLE_OPTIONS.indexOf(idleMinutes) + 1) % IDLE_OPTIONS.length];
+    try { localStorage.setItem("idleMinutes", String(idleMinutes)); } catch (e) {}
+    renderLockBtn();
   });
+  let lastActivity = Date.now(), loggedIn = false;
+  ["mousemove", "mousedown", "keydown", "touchstart", "wheel", "scroll"].forEach(ev =>
+    document.addEventListener(ev, () => { lastActivity = Date.now(); }, { capture: true, passive: true }));
+  setInterval(() => {
+    if (loggedIn && idleMinutes && Date.now() - lastActivity > idleMinutes * 60000) { loggedIn = false; doLogout(); }
+  }, 15000);
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      loggedIn = true;
+      lastActivity = Date.now();
       lockScreen.style.display = "none";
       if (!synced) { synced = true; startSync(); startDocSync(); startTrashSync(); subscribeUsage(); }
     } else {
