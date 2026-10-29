@@ -96,6 +96,38 @@
     #theme-toggle:hover { background: #333; color: #bbb; }
 
     #memo-list { flex: 1; overflow-y: auto; min-height: 60px; }
+    #search-input {
+      margin: 10px 10px 0; width: calc(100% - 20px); background: #2a2a2a; color: #ddd; border: 1px solid #3a3a3a;
+      padding: 7px 8px; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; outline: none;
+    }
+    #search-input:focus { border-color: #5a9a5a; }
+    .search-group { padding: 6px 14px; font-size: 10px; letter-spacing: 1px; color: #777; background: #1e1e1e; border-bottom: 1px solid #2a2a2a; }
+    .search-item { padding: 8px 14px; border-bottom: 1px solid #2e2e2e; cursor: pointer; font-size: 12px; color: #bbb; }
+    .search-item:hover { background: #2a2a2a; }
+    .search-item .s-title { color: #ddd; }
+    .search-item .s-snip { color: #888; font-size: 11px; margin-top: 2px; line-height: 1.5; word-break: break-all; }
+    .search-item .s-snip b { color: #f0c060; font-weight: 500; }
+    .search-note { padding: 8px 14px; font-size: 11px; color: #666; }
+    .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 0 10px 8px; }
+    .side-grid button {
+      background: #2a2a2a; color: #888; border: 1px solid #3a3a3a; padding: 6px 0;
+      font-family: 'Noto Sans KR', sans-serif; font-size: 11px; cursor: pointer;
+    }
+    .side-grid button:hover { background: #333; color: #bbb; }
+    #memo-controls { padding: 4px 10px; border-top: 1px solid #2a2a2a; }
+    #sort-select {
+      width: 100%; background: #2a2a2a; color: #999; border: 1px solid #3a3a3a; padding: 4px;
+      font-size: 11px; font-family: 'Noto Sans KR', sans-serif;
+    }
+    #tag-filter { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+    .tag-chip { background: #2a2a2a; color: #999; border: 1px solid #3a3a3a; padding: 1px 7px; font-size: 10px; cursor: pointer; border-radius: 9px; }
+    .tag-chip.on { background: #3d5a3d; color: #cfe8cf; border-color: #5a9a5a; }
+    .folder-head {
+      padding: 6px 14px; font-size: 10px; letter-spacing: 1px; color: #777; cursor: pointer;
+      background: #1e1e1e; border-bottom: 1px solid #2a2a2a; user-select: none;
+    }
+    .folder-head:hover { color: #aaa; }
+    .memo-item-tags { color: #6b6b6b; font-size: 10px; margin-left: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 70px; }
     #doc-header {
       padding: 8px 14px 6px; font-size: 10px; letter-spacing: 2px; color: #777;
       border-top: 1px solid #333; border-bottom: 1px solid #2e2e2e;
@@ -291,6 +323,56 @@
       flex-shrink: 0;
     }
     .selcount:empty { display: none; }
+    .panel-bottom { justify-content: space-between; }
+    .bottom-right { display: inline-flex; gap: 8px; margin-left: auto; }
+    .fmt-bar { display: inline-flex; gap: 3px; }
+    .fmt-bar button {
+      background: transparent; color: #999; border: 1px solid var(--border-light); padding: 1px 7px;
+      font-size: 11px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    }
+    .fmt-bar button:hover { background: var(--gutter-bg); color: var(--text-main); }
+    .conflict-note { color: #e8590c; font-weight: 500; }
+    .conflict-note[hidden] { display: none; }
+    .panel.doc-open .fmt-bar, .panel.doc-open .conflict-note { display: none; }
+    .meta-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-main); padding: 6px 9px; cursor: pointer; flex-shrink: 0; font-size: 12px; }
+    .meta-btn:hover { background: var(--gutter-bg); }
+    .meta-btn.has { border-color: #5a9a5a; }
+    /* 마크다운식 줄 서식: 저장은 순수 텍스트(접두어)이고 화면에서만 꾸민다 */
+    .memo-editor p.md-h1 { font-size: 1.5em; font-weight: 700; line-height: 1.5; }
+    .memo-editor p.md-h2 { font-size: 1.25em; font-weight: 600; line-height: 1.6; }
+    .memo-editor p.md-quote { border-left: 3px solid #aaa; padding-left: 10px; color: #777; }
+    .memo-editor p.md-done { text-decoration: line-through; color: #999; }
+    #meta-pop {
+      position: fixed; z-index: 10000; display: none; background: #2a2a2a; color: #eee; padding: 10px;
+      border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.45); font-size: 12px; width: 240px;
+    }
+    #meta-pop label { display: block; margin: 6px 0 2px; color: #aaa; }
+    #meta-pop input[type="text"] { width: 100%; background: #1f1f1f; color: #eee; border: 1px solid #555; padding: 5px 7px; font-size: 12px; outline: none; font-family: 'Noto Sans KR', sans-serif; }
+    #meta-pop .pin-row { margin-top: 8px; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 9000; display: flex; align-items: center; justify-content: center; }
+    .modal-box {
+      background: #262626; color: #ddd; width: 520px; max-width: calc(100% - 24px); max-height: 80vh; display: flex; flex-direction: column;
+      border: 1px solid #444; box-shadow: 0 8px 30px rgba(0,0,0,.5); font-size: 13px; font-family: 'Noto Sans KR', sans-serif;
+    }
+    .modal-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #3a3a3a; font-weight: 500; }
+    .modal-head button { background: none; border: none; color: #999; font-size: 16px; cursor: pointer; }
+    .modal-body { padding: 12px 16px; overflow-y: auto; }
+    .modal-foot { padding: 10px 16px; border-top: 1px solid #3a3a3a; display: flex; gap: 8px; justify-content: flex-end; }
+    .modal-box button.btn { background: #3a3a3a; color: #eee; border: none; padding: 7px 12px; cursor: pointer; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; }
+    .modal-box button.btn:hover { background: #4a4a4a; }
+    .modal-box button.btn.danger:hover { background: #8a2b2b; }
+    .modal-box .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 0; border-bottom: 1px solid #333; }
+    .modal-box .row .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .modal-box .row .sub { color: #888; font-size: 11px; }
+    .modal-box .stack { display: flex; flex-direction: column; gap: 8px; }
+    .modal-box .sec { margin: 12px 0 4px; font-weight: 500; color: #ccc; }
+    .modal-box .ann-row { display: flex; gap: 8px; padding: 7px 4px; border-bottom: 1px solid #333; cursor: pointer; }
+    .modal-box .ann-row:hover { background: #2e2e2e; }
+    .modal-box .ann-row .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+    .modal-box .ann-row .q { color: #ddd; }
+    .modal-box .ann-row .n { color: #f0b86e; margin-top: 2px; white-space: pre-wrap; }
+    .modal-box .ann-row .pg { color: #888; font-size: 11px; }
+    .modal-box .empty { color: #888; text-align: center; padding: 20px; }
 
     .memo-editor.font-consolas,
     .memo-editor.font-consolas p {
@@ -314,6 +396,7 @@
     .panel.doc-open .panel-bottom { display: none; }
     .panel.drag-over { outline: 3px dashed #5a9a5a; outline-offset: -3px; }
     .doc-view {
+      position: relative;
       flex: 1;
       display: none;
       flex-direction: column;
@@ -334,6 +417,60 @@
       border-bottom: 1px solid var(--border-light);
       flex-shrink: 0;
     }
+    .doc-bar { flex-wrap: wrap; }
+    .doc-actions { display: flex; gap: 6px; flex-shrink: 0; align-items: center; flex-wrap: wrap; }
+    .pdf-nav, .zoom-ctl { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; }
+    .pdf-nav[hidden], .zoom-ctl[hidden], .find-btn[hidden], .rect-btn[hidden], .find-bar[hidden] { display: none; }
+    .pdf-nav button, .zoom-ctl button, .find-btn, .rect-btn, .find-bar button {
+      background: transparent; color: var(--text-main); border: 1px solid var(--border-light);
+      padding: 3px 8px; font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    }
+    .pdf-nav button:hover, .zoom-ctl button:hover, .find-btn:hover, .rect-btn:hover, .find-bar button:hover { background: var(--gutter-bg); }
+    .rect-btn.on { background: #e8590c; color: #fff; border-color: #e8590c; }
+    .pg-input { width: 46px; text-align: center; font-size: 12px; padding: 2px; background: var(--bg-editor); color: var(--text-main); border: 1px solid var(--border-light); }
+    .zoom-val { min-width: 38px; text-align: center; }
+    .find-bar {
+      display: flex; align-items: center; gap: 6px; padding: 5px 16px; flex-shrink: 0;
+      background: var(--bg-main); border-bottom: 1px solid var(--border-light); font-size: 12px; color: var(--text-main);
+    }
+    .find-input { flex: 1; max-width: 260px; padding: 4px 8px; font-size: 12px; background: var(--bg-editor); color: var(--text-main); border: 1px solid var(--border-light); outline: none; }
+    .find-count { min-width: 50px; color: #888; }
+    mark.find { background: rgba(255, 212, 59, .75); color: inherit; }
+    mark.find.cur { background: rgba(255, 146, 43, .9); }
+    .doc-pdf mark.find { background: #ffd43b; }
+    .doc-pdf mark.find.cur { background: #ff922b; }
+    .doc-imgwrap { position: relative; margin: 0 auto; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+    .doc-imgwrap img { display: block; width: 100%; height: auto; }
+    .ann-rect {
+      position: absolute; z-index: 3; box-sizing: border-box; border: 2px solid #f08c00;
+      background: rgba(255, 224, 102, .25); cursor: pointer;
+    }
+    .ann-rect[data-color="g"] { border-color: #2f9e44; background: rgba(140, 233, 154, .25); }
+    .ann-rect[data-color="b"] { border-color: #1971c2; background: rgba(116, 192, 252, .25); }
+    .ann-rect[data-color="p"] { border-color: #c2255c; background: rgba(250, 162, 193, .25); }
+    .ann-rect.drawing { pointer-events: none; border-style: dashed; }
+    .ann-rect.has-note { box-shadow: 0 0 0 2px rgba(232, 89, 12, .5); }
+    .ann-rect.flash { outline: 3px solid #e8590c; }
+    .rect-mode .doc-body { cursor: crosshair; }
+    .rect-mode .textLayer, .rect-mode .ann-rect { pointer-events: none; }
+    .doc-actions button, .doc-actions input { font-family: 'Noto Sans KR', sans-serif; }
+    .ann-count {
+      background: transparent; color: var(--text-main); border: 1px solid var(--border-light);
+      padding: 4px 10px; font-size: 12px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+    }
+    .ann-count[hidden], .ann-list[hidden] { display: none; }
+    .ann-count:hover { background: var(--gutter-bg); }
+    .ann-list {
+      position: absolute; top: 34px; right: 12px; z-index: 20; width: 300px; max-width: calc(100% - 24px);
+      max-height: 55%; overflow-y: auto; background: #2a2a2a; color: #ddd;
+      border: 1px solid #444; box-shadow: 0 4px 14px rgba(0,0,0,.4); font-size: 12px;
+    }
+    .ann-item { display: flex; gap: 8px; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #383838; }
+    .ann-item:hover { background: #333; }
+    .ann-chip { width: 10px; height: 10px; border-radius: 50%; margin-top: 3px; flex-shrink: 0; }
+    .ann-item-quote { color: #ccc; }
+    .ann-item-note { color: #f0b86e; margin-top: 3px; white-space: pre-wrap; }
+    .ann-empty { padding: 14px; text-align: center; color: #888; line-height: 1.6; }
     .doc-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .doc-close {
       background: #333; color: #fff; border: none;
@@ -343,11 +480,34 @@
     .doc-close:hover { background: #000; }
     .doc-body { flex: 1; overflow: auto; padding: 16px; }
     .doc-msg { color: #888; font-size: 13px; padding: 20px; text-align: center; }
-    .doc-pdf canvas {
-      display: block; max-width: 100%; height: auto !important;
-      margin: 0 auto 12px; background: #fff;
-      box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    .pdf-page { position: relative; margin: 0 auto 12px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.3); }
+    .pdf-page canvas { position: absolute; inset: 0; width: 100%; height: 100%; mix-blend-mode: multiply; pointer-events: none; }
+    /* pdf.js 텍스트 레이어: 투명 글자를 캔버스 위에 겹쳐 드래그/복사/하이라이트를 가능하게 함 */
+    .textLayer { position: absolute; inset: 0; overflow: hidden; line-height: 1; text-size-adjust: none; }
+    .textLayer span, .textLayer br { color: transparent; position: absolute; white-space: pre; cursor: text; transform-origin: 0% 0%; }
+    .textLayer ::selection { background: rgba(0, 90, 255, .3); }
+    mark.ann { background: rgba(255, 224, 102, .6); color: inherit; border-radius: 2px; cursor: pointer; }
+    mark.ann[data-color="g"] { background: rgba(140, 233, 154, .6); }
+    mark.ann[data-color="b"] { background: rgba(116, 192, 252, .55); }
+    mark.ann[data-color="p"] { background: rgba(250, 162, 193, .6); }
+    /* PDF: 하이라이트는 canvas 아래에 깔리고 canvas가 multiply로 겹쳐져 글자가 선명하게 유지된다 */
+    .pdf-page { isolation: isolate; }
+    .doc-pdf mark.ann { background: #ffe066; }
+    .doc-pdf mark.ann[data-color="g"] { background: #8ce99a; }
+    .doc-pdf mark.ann[data-color="b"] { background: #74c0fc; }
+    .doc-pdf mark.ann[data-color="p"] { background: #faa2c1; }
+    mark.ann.has-note { border-bottom: 2px solid #e8590c; }
+    mark.ann.flash { outline: 3px solid #e8590c; }
+    #ann-pop {
+      position: fixed; z-index: 10000; display: none; background: #2a2a2a; color: #eee; padding: 6px;
+      border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.45); font-size: 12px; max-width: 260px;
     }
+    #ann-pop .ann-dot { width: 20px; height: 20px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; margin: 0 3px 0 0; vertical-align: middle; }
+    #ann-pop .ann-dot.cur { border-color: #fff; }
+    #ann-pop .ann-btn { background: #3a3a3a; color: #eee; border: none; padding: 4px 8px; margin-left: 4px; cursor: pointer; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; vertical-align: middle; }
+    #ann-pop .ann-btn:hover { background: #4a4a4a; }
+    #ann-pop .ann-note { display: block; width: 240px; margin-top: 6px; background: #1f1f1f; color: #eee; border: 1px solid #555; padding: 6px; font-family: 'Noto Sans KR', sans-serif; font-size: 12px; resize: vertical; outline: none; }
+    #ann-pop .ann-quote { margin-top: 4px; color: #999; font-size: 11px; }
     .doc-page {
       background: #fff; color: #222;
       max-width: 820px; margin: 0 auto; padding: 32px 36px;
@@ -358,6 +518,9 @@
     .doc-page p { min-height: 1.2em; margin: 0 0 .3em; }
     .doc-page img { max-width: 100%; height: auto; }
     .doc-page table { border-collapse: collapse; margin: 8px 0; max-width: 100%; }
+    .doc-page.hwpx { font-size: 10pt; line-height: 1.6; }
+    .doc-page.hwpx p { margin: 0; }
+    .doc-page .hwpx-noimg { color: #999; font-size: .85em; }
     .doc-page td, .doc-page th { border: 1px solid #999; padding: 4px 8px; vertical-align: top; }
     .doc-page h1, .doc-page h2, .doc-page h3 { margin: .8em 0 .4em; }
     .doc-page ul, .doc-page ol { margin: .4em 0 .4em 1.6em; }
@@ -472,10 +635,25 @@
 
 <div id="sidebar">
   <div id="sidebar-header">MEMOS <span id="mobile-toggle-icon">▾</span></div>
+  <input id="search-input" type="search" placeholder="🔍 메모·문서 검색 (Ctrl+K)" autocomplete="off" />
   <button id="new-btn">+ 새 메모</button>
   <button id="split-toggle">⊟ 분할화면</button>
   <button id="theme-toggle">🌙 다크모드</button>
+  <div class="side-grid">
+    <button id="trash-btn" title="삭제한 메모 복구">🗑 휴지통</button>
+    <button id="backup-btn" title="내보내기 / 백업 / 복원">⬇ 백업</button>
+    <button id="anns-btn" title="모든 문서의 하이라이트/메모 모아보기">💬 주석 모음</button>
+    <button id="lock-btn" title="일정 시간 사용하지 않으면 자동 로그아웃">⏱ 자동잠금</button>
+  </div>
   <button id="logout-btn" style="margin:0 10px 10px;background:#2a2a2a;color:#888;border:1px solid #3a3a3a;padding:6px 0;font-family:'Noto Sans KR',sans-serif;font-size:11px;cursor:pointer;width:calc(100% - 20px);">로그아웃</button>
+  <div id="memo-controls">
+    <select id="sort-select" title="정렬">
+      <option value="recent">최근 수정순</option>
+      <option value="title">제목순</option>
+      <option value="created">만든 순</option>
+    </select>
+    <div id="tag-filter"></div>
+  </div>
   <div id="memo-list"></div>
   <div id="doc-header">DOCS</div>
   <div id="doc-list"></div>
@@ -487,7 +665,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, onValue, set, remove, push, update, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, onValue, set, remove, push, update, increment, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getStorage, ref as sRef, uploadBytesResumable, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
@@ -591,6 +769,42 @@
     ).join("\n");
   }
 
+  // ── 공통 모달 / 다운로드 ──
+  let modalEl = null;
+  function closeModal() { if (modalEl) { modalEl.remove(); modalEl = null; } }
+  function openModal(title, build) {
+    closeModal();
+    const bg = document.createElement("div");
+    bg.className = "modal-bg";
+    bg.innerHTML = '<div class="modal-box"><div class="modal-head"><span></span><button title="닫기">✕</button></div><div class="modal-body"></div><div class="modal-foot" hidden></div></div>';
+    bg.querySelector(".modal-head span").textContent = title;
+    bg.querySelector(".modal-head button").addEventListener("click", closeModal);
+    bg.addEventListener("mousedown", (e) => { if (e.target === bg) closeModal(); });
+    document.body.appendChild(bg);
+    modalEl = bg;
+    build(bg.querySelector(".modal-body"), bg.querySelector(".modal-foot"));
+    return bg;
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && modalEl) closeModal(); });
+  function modalButton(label, onClick, cls = "") {
+    const b = document.createElement("button");
+    b.className = "btn " + cls;
+    b.textContent = label;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+  function downloadBlob(name, data, mime) {
+    const url = URL.createObjectURL(data instanceof Blob ? data : new Blob([data], { type: mime }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  const safeName = (t) => (t || "제목 없음").replace(/[\\/:*?"<>|\n\r]+/g, "_").slice(0, 60);
+
   // ── 거터 렌더링 ──
   // 각 <p>의 offsetTop, offsetHeight를 그대로 반영해서 정확히 맞춤
   function renderGutter(panelIdx) {
@@ -631,6 +845,123 @@
     inner.style.height = p.editorEl.scrollHeight + "px";
   }
 
+  // ── 줄 서식 (마크다운 접두어) ──
+  const FMT_PREFIX = { h1: "# ", h2: "## ", ul: "- ", todo: "- [ ] ", quote: "> " };
+  const ANY_PREFIX = /^(#{1,2} |- \[[ xX]\] |- |> )/;
+  const LIST_PREFIX = /^(- \[[ xX]\] |- |> )/;
+  function paraClass(text) {
+    if (text.startsWith("## ")) return "md-h2";
+    if (text.startsWith("# ")) return "md-h1";
+    if (/^- \[[xX]\] /.test(text)) return "md-done";
+    if (text.startsWith("> ")) return "md-quote";
+    return "";
+  }
+  function styleParas(editor) {
+    editor.querySelectorAll("p").forEach(pe => {
+      const c = paraClass(pe.textContent);
+      if (pe.className !== c) pe.className = c;
+    });
+  }
+  function currentPara(editor) {
+    const sel = window.getSelection();
+    let n = sel.rangeCount ? sel.getRangeAt(0).startContainer : null;
+    while (n && n !== editor) { if (n.nodeType === 1 && n.tagName === "P") return n; n = n.parentNode; }
+    return null;
+  }
+  function selectedParas(editor) {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return [];
+    const r = sel.getRangeAt(0);
+    const ps = Array.from(editor.querySelectorAll("p")).filter(pe => r.intersectsNode(pe));
+    return ps.length ? ps : [currentPara(editor)].filter(Boolean);
+  }
+  function setCaretEnd(el) {
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    r.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(r);
+  }
+  function toggleLinePrefix(panelIdx, kind) {
+    const p = panels[panelIdx];
+    if (!p || p.docId) return;
+    const paras = selectedParas(p.editorEl);
+    if (!paras.length) return;
+    const target = FMT_PREFIX[kind];
+    const norm = (pe) => { const m = pe.textContent.match(ANY_PREFIX); return m ? m[0].replace(/\[[xX]\]/, "[ ]") : ""; };
+    const allHave = paras.every(pe => norm(pe) === target);
+    paras.forEach(pe => {
+      const t = pe.textContent.replace(ANY_PREFIX, "");
+      pe.textContent = allHave ? t : target + t;
+      if (!pe.textContent) pe.innerHTML = "<br>";
+    });
+    setCaretEnd(paras[paras.length - 1]);
+    p.editorEl.focus();
+    onEditorChanged(panelIdx);
+  }
+  function toggleTodoDone(panelIdx) {
+    const p = panels[panelIdx];
+    const pe = p && currentPara(p.editorEl);
+    if (!pe) return;
+    const t = pe.textContent;
+    if (/^- \[ \] /.test(t)) pe.textContent = t.replace("- [ ] ", "- [x] ");
+    else if (/^- \[[xX]\] /.test(t)) pe.textContent = t.replace(/^- \[[xX]\] /, "- [ ] ");
+    else return;
+    setCaretEnd(pe);
+    onEditorChanged(panelIdx);
+  }
+  // Enter: 목록/체크리스트/인용 줄에서는 다음 줄에 접두어를 이어 붙이고, 빈 항목에서 Enter를 치면 목록을 끝낸다
+  function handleEnter(panelIdx) {
+    const p = panels[panelIdx];
+    const pe = currentPara(p.editorEl);
+    const sel = window.getSelection();
+    const m = pe && pe.textContent.match(LIST_PREFIX);
+    if (m && sel.isCollapsed) {
+      const pre = document.createRange();
+      pre.selectNodeContents(pe);
+      pre.setEnd(sel.getRangeAt(0).startContainer, sel.getRangeAt(0).startOffset);
+      if (pre.toString().length >= m[0].length) {
+        if (pe.textContent.length === m[0].length) {   // 빈 항목 → 목록 종료
+          pe.innerHTML = "<br>";
+          setCaretEnd(pe);
+          onEditorChanged(panelIdx);
+          return;
+        }
+        document.execCommand("insertParagraph");
+        document.execCommand("insertText", false, m[0].replace(/\[[xX]\]/, "[ ]"));
+        onEditorChanged(panelIdx);
+        return;
+      }
+    }
+    document.execCommand("insertParagraph");
+    onEditorChanged(panelIdx);
+  }
+
+  // ── 임시 저장(draft): 저장 전에 탭이 닫히거나 오프라인이어도 내용을 잃지 않게 이 브라우저에 보관 ──
+  const draftKey = (id) => "draft:" + id;
+  function writeDraft(p) {
+    if (!p || !p.memoId) return;
+    try {
+      localStorage.setItem(draftKey(p.memoId), JSON.stringify({
+        title: p.titleEl.value, content: htmlToText(p.editorEl), ts: Date.now(), base: p.baseTs || 0
+      }));
+    } catch (e) {}
+  }
+  function clearDraft(id) { try { localStorage.removeItem(draftKey(id)); } catch (e) {} }
+  function readDraft(id) { try { return JSON.parse(localStorage.getItem(draftKey(id))); } catch (e) { return null; } }
+
+  function onEditorChanged(panelIdx) {
+    const p = panels[panelIdx];
+    if (!p) return;
+    p.dirty = true;
+    styleParas(p.editorEl);
+    p.panelEl.querySelector(".charcount").textContent = htmlToText(p.editorEl).length + "자";
+    requestAnimationFrame(() => renderGutter(panelIdx));
+    clearTimeout(p.draftTimer);
+    p.draftTimer = setTimeout(() => writeDraft(p), 400);
+  }
+
   // ── 패널 DOM 생성 ──
   function createPanelEl(panelIdx) {
     const wrap = document.createElement("div");
@@ -639,12 +970,33 @@
     wrap.innerHTML = `
       <div class="panel-header">
         <input class="panel-title-input" type="text" placeholder="제목 없음" maxlength="80" />
-        <button class="doc-btn" title="PDF / DOCX / HWPX 문서 열기">📄 문서</button>
-        <input class="doc-file" type="file" accept=".pdf,.docx,.hwpx" hidden />
+        <button class="meta-btn" title="폴더 / 태그 / 고정">🏷</button>
+        <button class="doc-btn" title="PDF / DOCX / HWPX / 이미지 열기">📄 문서</button>
+        <input class="doc-file" type="file" accept=".pdf,.docx,.hwpx,.png,.jpg,.jpeg,.gif,.webp,.bmp" hidden />
         <button class="save-btn">저장</button>
       </div>
       <div class="doc-view">
-        <div class="doc-bar"><span class="doc-name"></span><button class="doc-close">✕ 닫고 메모로</button></div>
+        <div class="doc-bar">
+          <span class="doc-name"></span>
+          <span class="doc-actions">
+            <span class="pdf-nav" hidden>
+              <button class="pg-prev" title="이전 쪽">‹</button><input class="pg-input" type="number" min="1" value="1"><span class="pg-slash">/</span><span class="pg-total">1</span><button class="pg-next" title="다음 쪽">›</button>
+            </span>
+            <span class="zoom-ctl" hidden>
+              <button class="zoom-out" title="축소">−</button><span class="zoom-val">100%</span><button class="zoom-in" title="확대">＋</button><button class="zoom-fit" title="폭에 맞춤">맞춤</button>
+            </span>
+            <button class="find-btn" hidden title="문서에서 찾기 (Ctrl+F)">🔍</button>
+            <button class="rect-btn" hidden title="영역 표시: 드래그로 사각형 그리기">▭</button>
+            <button class="ann-count" hidden title="하이라이트/메모 목록">💬 0</button>
+            <button class="doc-close">✕ 닫고 메모로</button>
+          </span>
+        </div>
+        <div class="find-bar" hidden>
+          <input class="find-input" type="text" placeholder="문서에서 찾기" />
+          <span class="find-count"></span>
+          <button class="find-prev" title="이전 (Shift+Enter)">▲</button><button class="find-next" title="다음 (Enter)">▼</button><button class="find-close" title="닫기 (Esc)">✕</button>
+        </div>
+        <div class="ann-list" hidden></div>
         <div class="doc-body"></div>
       </div>
       <div class="editor-wrap">
@@ -652,7 +1004,13 @@
         <div class="memo-editor" contenteditable="true" spellcheck="false"
              data-placeholder="메모를 선택하세요..."></div>
       </div>
-      <div class="panel-bottom"><span class="selcount"></span><span class="charcount">0자</span></div>
+      <div class="panel-bottom">
+        <span class="fmt-bar">
+          <button data-fmt="h1" title="제목 1 (# )">H1</button><button data-fmt="h2" title="제목 2 (## )">H2</button><button data-fmt="ul" title="목록 (- )">•</button><button data-fmt="todo" title="체크리스트 (Ctrl+Enter로 체크)">☑</button><button data-fmt="quote" title="인용 (> )">❝</button><button data-fmt="export" title="이 메모를 .md로 내보내기">⬇ .md</button>
+        </span>
+        <span class="conflict-note" hidden>⚠️ 다른 곳에서 수정됨 — 저장하면 덮어씁니다</span>
+        <span class="bottom-right"><span class="selcount"></span><span class="charcount">0자</span></span>
+      </div>
     `;
 
     const titleInput = wrap.querySelector(".panel-title-input");
@@ -663,7 +1021,11 @@
     const selcount   = wrap.querySelector(".selcount");
 
     const pState = { memoId: null, editorEl: editor, titleEl: titleInput, gutterEl: gutter, selCountEl: selcount, dirty: false,
-                     panelEl: wrap, docId: null, docToken: 0 };
+                     baseTs: 0, draftTimer: null,
+                     panelEl: wrap, docId: null, docToken: 0,
+                     anns: {}, orphans: new Set(), docReady: false, pendingEdit: null, pendingJump: null,
+                     annsLoaded: false, docKind: "text", docExt: "", docBuf: null, zoom: 1, pdfSeq: 0, pdfIOs: [], pdfPages: 0,
+                     rectMode: false, posReady: false, find: { q: "", n: 0, cur: -1 } };
     panels[panelIdx] = pState;
 
     // 문서 열기: 버튼 / 드래그앤드롭
@@ -675,6 +1037,41 @@
       docInput.value = "";
     });
     wrap.querySelector(".doc-close").addEventListener("click", () => closeDoc(panelIdx));
+    const annList = wrap.querySelector(".ann-list");
+    wrap.querySelector(".ann-count").addEventListener("click", () => { annList.hidden = !annList.hidden; });
+    const docBody = wrap.querySelector(".doc-body");
+    docBody.addEventListener("mouseup", (e) => onDocPointerUp(panelIdx, e));
+    docBody.addEventListener("touchend", (e) => onDocPointerUp(panelIdx, e));
+    docBody.addEventListener("scroll", () => {
+      hideAnnPop();
+      if (pState.docKind === "pdf" && pState.docReady) requestAnimationFrame(() => updateCurrentPage(pState));
+      saveDocPosSoon(pState);
+    });
+    docBody.addEventListener("mousedown", (e) => startRect(panelIdx, e));
+    wrap.addEventListener("mousedown", () => { lastDocPanel = panelIdx; }, true);
+
+    // 도구 모음
+    const q = (sel) => wrap.querySelector(sel);
+    q(".pg-prev").addEventListener("click", () => jumpPage(pState, currentPage(pState) - 1));
+    q(".pg-next").addEventListener("click", () => jumpPage(pState, currentPage(pState) + 1));
+    q(".pg-input").addEventListener("keydown", (e) => { if (e.key === "Enter") { jumpPage(pState, parseInt(e.target.value, 10) || 1); e.target.blur(); } });
+    q(".zoom-in").addEventListener("click", () => stepZoom(pState, 1));
+    q(".zoom-out").addEventListener("click", () => stepZoom(pState, -1));
+    q(".zoom-fit").addEventListener("click", () => setZoom(pState, 1));
+    q(".rect-btn").addEventListener("click", () => setRectMode(pState, !pState.rectMode));
+    q(".find-btn").addEventListener("click", () => openFind(pState));
+    q(".find-close").addEventListener("click", () => closeFind(pState));
+    q(".find-next").addEventListener("click", () => findStep(pState, 1));
+    q(".find-prev").addEventListener("click", () => findStep(pState, -1));
+    let findTimer = null;
+    q(".find-input").addEventListener("input", (e) => {
+      clearTimeout(findTimer);
+      findTimer = setTimeout(() => runFind(pState, e.target.value), 200);
+    });
+    q(".find-input").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); clearTimeout(findTimer); if (pState.find.q !== e.target.value) runFind(pState, e.target.value); else findStep(pState, e.shiftKey ? -1 : 1); }
+      else if (e.key === "Escape") closeFind(pState);
+    });
     wrap.addEventListener("dragover", (e) => {
       if (e.dataTransfer && Array.from(e.dataTransfer.types).includes("Files")) {
         e.preventDefault();
@@ -694,21 +1091,31 @@
 
     saveBtn.addEventListener("click", () => savePanel(panelIdx));
 
-    titleInput.addEventListener("input", () => { pState.dirty = true; });
+    titleInput.addEventListener("input", () => {
+      pState.dirty = true;
+      clearTimeout(pState.draftTimer);
+      pState.draftTimer = setTimeout(() => writeDraft(pState), 400);
+    });
 
     editor.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); toggleTodoDone(panelIdx); return; }
       if (e.key === "Enter") {
         e.preventDefault();
-        document.execCommand("insertParagraph");
-        requestAnimationFrame(() => renderGutter(panelIdx));
+        handleEnter(panelIdx);
       }
     });
 
-    editor.addEventListener("input", () => {
-      charcount.textContent = htmlToText(editor).length + "자";
-      pState.dirty = true;
-      requestAnimationFrame(() => renderGutter(panelIdx));
+    editor.addEventListener("input", () => onEditorChanged(panelIdx));
+
+    // 서식 버튼 / 메타(폴더·태그·고정) 버튼
+    wrap.querySelector(".fmt-bar").addEventListener("mousedown", (e) => e.preventDefault());  // 에디터 선택 유지
+    wrap.querySelector(".fmt-bar").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      if (b.dataset.fmt === "export") exportMemo(panelIdx, "md");
+      else toggleLinePrefix(panelIdx, b.dataset.fmt);
     });
+    wrap.querySelector(".meta-btn").addEventListener("click", (e) => openMetaPop(panelIdx, e.currentTarget));
 
     // 스크롤 동기화: gutter-inner를 translateY로 에디터 스크롤에 맞춤
     editor.addEventListener("scroll", () => {
@@ -724,6 +1131,7 @@
       const text = e.clipboardData.getData("text/plain").replace(/\r\n?/g, "\n");
       document.execCommand("insertText", false, text);
       requestAnimationFrame(() => renderGutter(panelIdx));
+      onEditorChanged(panelIdx);
     });
 
     const ro = new ResizeObserver(() => requestAnimationFrame(() => renderGutter(panelIdx)));
@@ -750,66 +1158,235 @@
   const CDN = "https://cdnjs.cloudflare.com/ajax/libs/";
   const PDFJS_BASE = CDN + "pdf.js/3.11.174/";
 
-  async function renderPdf(buf, body) {
+  // PDF: canvas(그림) + pdf.js 텍스트 레이어(드래그/복사/주석용 투명 텍스트)
+  // PDF: 텍스트 레이어는 전 페이지를 만들고(드래그/검색/주석용), canvas는 화면 근처 페이지만 그린다(메모리 절약)
+  async function renderPdf(buf, body, p) {
     await loadScript(PDFJS_BASE + "pdf.min.js");
     pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + "pdf.worker.min.js";
+    const seq = p ? ++p.pdfSeq : 0;
     const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buf) }).promise;
+    if (p && seq !== p.pdfSeq) return;
     const wrap = document.createElement("div");
-    wrap.className = "doc-pdf";
+    wrap.className = "doc-pdf doc-textroot";
     body.innerHTML = "";
     body.appendChild(wrap);
-    const targetW = Math.max(body.clientWidth - 32, 400);
-    const dpr = window.devicePixelRatio || 1;
+    const zoom = (p && p.zoom) || 1;
+    const cssW = Math.max((body.clientWidth - 32) * zoom, 200);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const io = new IntersectionObserver((entries) => {
+      for (const en of entries) en.isIntersecting ? drawPdfPage(en.target) : releasePdfPage(en.target);
+    }, { root: body, rootMargin: "1200px 0px" });
+    if (p) { p.pdfIOs.forEach(o => o.disconnect()); p.pdfIOs = [io]; p.pdfPages = pdf.numPages; }
     for (let n = 1; n <= pdf.numPages; n++) {
       const page = await pdf.getPage(n);
-      const base = page.getViewport({ scale: 1 });
-      const vp = page.getViewport({ scale: (targetW / base.width) * dpr });
-      const canvas = document.createElement("canvas");
-      canvas.width = vp.width;
-      canvas.height = vp.height;
-      canvas.style.width = (vp.width / dpr) + "px";
-      wrap.appendChild(canvas);
-      await page.render({ canvasContext: canvas.getContext("2d"), viewport: vp }).promise;
+      if (p && seq !== p.pdfSeq) return;
+      const scale = cssW / page.getViewport({ scale: 1 }).width;
+      const vpCss = page.getViewport({ scale });
+      const pageEl = document.createElement("div");
+      pageEl.className = "pdf-page ann-page";
+      pageEl.dataset.n = n;
+      pageEl.style.width = vpCss.width + "px";
+      pageEl.style.height = vpCss.height + "px";
+      pageEl._page = page; pageEl._scale = scale; pageEl._dpr = dpr;
+      const textDiv = document.createElement("div");
+      textDiv.className = "textLayer";
+      textDiv.style.setProperty("--scale-factor", vpCss.scale);
+      pageEl.appendChild(textDiv);
+      wrap.appendChild(pageEl);
+      io.observe(pageEl);
+      await pdfjsLib.renderTextLayer({
+        textContentSource: await page.getTextContent(),
+        container: textDiv,
+        viewport: vpCss,
+        textDivs: []
+      }).promise;
     }
+  }
+  async function drawPdfPage(pageEl) {
+    if (pageEl._canvas) return;
+    const canvas = document.createElement("canvas");
+    pageEl._canvas = canvas;
+    const vp = pageEl._page.getViewport({ scale: pageEl._scale * pageEl._dpr });
+    canvas.width = vp.width;
+    canvas.height = vp.height;
+    pageEl.appendChild(canvas);  // 텍스트 레이어 뒤(위)에 얹힘 → multiply로 하이라이트와 겹침
+    try {
+      pageEl._task = pageEl._page.render({ canvasContext: canvas.getContext("2d"), viewport: vp });
+      await pageEl._task.promise;
+    } catch (e) { /* 렌더링 취소됨 */ }
+  }
+  function releasePdfPage(pageEl) {
+    if (!pageEl._canvas) return;
+    try { pageEl._task && pageEl._task.cancel(); } catch (e) {}
+    pageEl._canvas.remove();
+    pageEl._canvas = null;
+  }
+
+  const IMAGE_MIME = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", webp: "image/webp", bmp: "image/bmp" };
+  async function renderImage(buf, body, p, ext) {
+    const url = URL.createObjectURL(new Blob([buf], { type: IMAGE_MIME[ext] }));
+    if (p) { if (p.objUrl) URL.revokeObjectURL(p.objUrl); p.objUrl = url; }
+    body.innerHTML = '<div class="doc-imgwrap ann-page"><img alt=""></div>';
+    body.firstChild.style.width = (((p && p.zoom) || 1) * 100) + "%";
+    const img = body.querySelector("img");
+    await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error("이미지를 해석할 수 없습니다.")); img.src = url; });
   }
 
   async function renderDocx(buf, body) {
     await loadScript(CDN + "mammoth/1.6.0/mammoth.browser.min.js");
     const result = await mammoth.convertToHtml({ arrayBuffer: buf });
-    body.innerHTML = '<div class="doc-page"></div>';
+    body.innerHTML = '<div class="doc-page doc-textroot"></div>';
     body.firstChild.innerHTML = result.value || '<p class="doc-msg">내용이 없습니다.</p>';
   }
 
-  // HWPX = ZIP + XML. 문단(p), 표(tbl), 줄바꿈만 추출해 간이 렌더링한다. (이미지/도형은 제외)
+  // HWPX = ZIP + XML. 본문(문단/표/그림)과 header.xml의 글자·문단·테두리 서식을 읽어 HTML로 변환한다.
+  // 1hwpunit = 1/7200인치 → 96dpi 기준 75hwpunit = 1px
   async function renderHwpx(buf, body) {
     await loadScript(CDN + "jszip/3.10.1/jszip.min.js");
     const zip = await JSZip.loadAsync(buf);
+    const parseXml = async (name) => {
+      const f = zip.file(name);
+      if (!f) return null;
+      const x = new DOMParser().parseFromString(await f.async("string"), "application/xml");
+      return x.querySelector("parsererror") ? null : x;
+    };
+    const kids = (el, name) => Array.from(el.children).filter(c => c.localName === name);
+    const px = (v) => (parseInt(v, 10) || 0) / 75;
+
     const names = Object.keys(zip.files)
       .filter(n => /^Contents\/section\d+\.xml$/i.test(n))
       .sort((a, b) => parseInt(a.match(/\d+/)[0], 10) - parseInt(b.match(/\d+/)[0], 10));
     if (!names.length) throw new Error("HWPX 본문(section)을 찾을 수 없습니다.");
 
+    // ── header.xml: 글자/문단/테두리 서식 ──
+    const charPr = {}, paraAlign = {}, borderFill = {};
+    const header = await parseXml("Contents/header.xml");
+    if (header) {
+      for (const el of header.getElementsByTagName("*")) {
+        const ln = el.localName, id = el.getAttribute("id");
+        if (ln === "charPr") {
+          const css = [];
+          const size = parseInt(el.getAttribute("height"), 10);
+          if (size) css.push(`font-size:${size / 100}pt`);
+          const color = el.getAttribute("textColor");
+          if (color && /^#[0-9a-f]{6}$/i.test(color) && color !== "#000000") css.push(`color:${color}`);
+          if (kids(el, "bold").length) css.push("font-weight:bold");
+          if (kids(el, "italic").length) css.push("font-style:italic");
+          const ul = kids(el, "underline")[0];
+          if (ul && ul.getAttribute("type") && ul.getAttribute("type") !== "NONE") css.push("text-decoration:underline");
+          charPr[id] = css.join(";");
+        } else if (ln === "paraPr") {
+          const al = kids(el, "align")[0];
+          if (al) paraAlign[id] = { LEFT: "left", RIGHT: "right", CENTER: "center", JUSTIFY: "justify", DISTRIBUTE: "justify" }[al.getAttribute("horizontal")];
+        } else if (ln === "borderFill") {
+          const bf = {};
+          for (const side of ["left", "right", "top", "bottom"]) {
+            const b = kids(el, side + "Border")[0];
+            if (!b) continue;
+            const type = b.getAttribute("type");
+            const mm = parseFloat(b.getAttribute("width")) || 0.12;
+            const w = Math.min(3, Math.max(1, Math.round(mm * 3.78)));
+            bf[side] = !type || type === "NONE" ? "none" : `${w}px ${type === "DASH" || type === "DOT" ? "dashed" : "solid"} ${b.getAttribute("color") || "#000"}`;
+          }
+          const brush = el.getElementsByTagName("*");
+          for (const c of brush) {
+            if (c.localName === "winBrush") {
+              const fc = c.getAttribute("faceColor");
+              if (fc && /^#[0-9a-f]{6}$/i.test(fc)) bf.bg = fc;
+            }
+          }
+          borderFill[id] = bf;
+        }
+      }
+    }
+
+    // ── 본문 XML 로드 + 그림 파일 미리 읽기 ──
+    const sections = [];
+    for (const name of names) {
+      const xml = await parseXml(name);
+      if (!xml) throw new Error("HWPX XML 해석 실패");
+      sections.push(xml);
+    }
+    const manifest = {};
+    const hpf = await parseXml("Contents/content.hpf");
+    if (hpf) for (const it of hpf.getElementsByTagName("*")) {
+      if (it.localName === "item" && it.getAttribute("id") && it.getAttribute("href")) manifest[it.getAttribute("id")] = it.getAttribute("href");
+    }
+    const MIME = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", bmp: "image/bmp", webp: "image/webp", svg: "image/svg+xml" };
+    const findBin = (refId) => {
+      const href = manifest[refId];
+      for (const cand of [href, href && "Contents/" + href]) if (cand && zip.file(cand)) return cand;
+      return Object.keys(zip.files).find(n => /^BinData\//i.test(n) && n.replace(/^.*\//, "").replace(/\.[^.]+$/, "") === refId) || null;
+    };
+    const imgUrls = {};
+    const refs = new Set();
+    for (const xml of sections) for (const el of xml.getElementsByTagName("*")) {
+      if (el.localName === "img" && el.getAttribute("binaryItemIDRef")) refs.add(el.getAttribute("binaryItemIDRef"));
+    }
+    await Promise.all([...refs].map(async (refId) => {
+      const path = findBin(refId);
+      const mime = path && MIME[path.split(".").pop().toLowerCase()];
+      if (path && mime) imgUrls[refId] = `data:${mime};base64,` + await zip.file(path).async("base64");
+    }));
+
     const page = document.createElement("div");
-    page.className = "doc-page";
-    const kids = (el, name) => Array.from(el.children).filter(c => c.localName === name);
+    page.className = "doc-page doc-textroot hwpx";
+
+    function buildPic(pic) {
+      const imgEl = Array.from(pic.getElementsByTagName("*")).find(e => e.localName === "img");
+      const url = imgEl && imgUrls[imgEl.getAttribute("binaryItemIDRef")];
+      if (!url) {
+        const ph = document.createElement("span");
+        ph.className = "hwpx-noimg";
+        ph.textContent = "[그림]";
+        return ph;
+      }
+      const img = document.createElement("img");
+      img.src = url;
+      const sz = kids(pic, "curSz")[0] || kids(pic, "sz")[0];
+      if (sz && px(sz.getAttribute("width")) > 0) img.style.width = px(sz.getAttribute("width")) + "px";
+      img.style.maxWidth = "100%";
+      img.style.height = "auto";
+      return img;
+    }
 
     function walkP(pEl, out) {
-      let p = document.createElement("p");
+      const al = paraAlign[pEl.getAttribute("paraPrIDRef")];
+      const newP = () => { const e = document.createElement("p"); if (al) e.style.textAlign = al; return e; };
+      let p = newP();
       out.appendChild(p);
-      (function rec(n) {
+      const addText = (txt, style) => {
+        if (!txt) return;
+        if (style) { const sp = document.createElement("span"); sp.style.cssText = style; sp.textContent = txt; p.appendChild(sp); }
+        else p.appendChild(document.createTextNode(txt));
+      };
+      (function rec(n, style) {
         for (const c of n.children) {
           const ln = c.localName;
-          if (ln === "t") p.appendChild(document.createTextNode(c.textContent));
-          else if (ln === "tbl") { out.appendChild(buildTbl(c)); p = document.createElement("p"); out.appendChild(p); }
+          if (ln === "run") rec(c, charPr[c.getAttribute("charPrIDRef")] || style);
+          else if (ln === "t") {
+            for (const node of c.childNodes) {
+              if (node.nodeType === 3) addText(node.nodeValue, style);
+              else if (node.localName === "tab") addText(" ", style);
+              else if (node.localName === "lineBreak") p.appendChild(document.createElement("br"));
+              else if (node.localName === "nbSpace" || node.localName === "fwSpace") addText(" ", style);
+              else addText(node.textContent, style);
+            }
+          }
+          else if (ln === "tbl") { out.appendChild(buildTbl(c)); p = newP(); out.appendChild(p); }
+          else if (ln === "pic") p.appendChild(buildPic(c));
           else if (ln === "lineBreak") p.appendChild(document.createElement("br"));
-          else if (ln === "tab") p.appendChild(document.createTextNode("\u2003"));
           else if (ln === "header" || ln === "footer") continue;
-          else rec(c);
+          else rec(c, style);
         }
-      })(pEl);
+      })(pEl, "");
     }
+
     function buildTbl(tbl) {
       const table = document.createElement("table");
+      const tsz = kids(tbl, "sz")[0];
+      if (tsz && px(tsz.getAttribute("width")) > 0) table.style.width = px(tsz.getAttribute("width")) + "px";
+      const tblBf = borderFill[tbl.getAttribute("borderFillIDRef")];
       for (const tr of kids(tbl, "tr")) {
         const row = table.insertRow();
         for (const tc of kids(tr, "tc")) {
@@ -820,18 +1397,30 @@
             if (cs > 1) td.colSpan = cs;
             if (rs > 1) td.rowSpan = rs;
           }
+          const csz = kids(tc, "cellSz")[0];
+          if (csz) {
+            if (px(csz.getAttribute("width")) > 0) td.style.width = px(csz.getAttribute("width")) + "px";
+            if (px(csz.getAttribute("height")) > 0) td.style.height = px(csz.getAttribute("height")) + "px";
+          }
+          // 셀 테두리/배경: header의 borderFill. 정보가 없으면 기본 실선.
+          const bf = borderFill[tc.getAttribute("borderFillIDRef")] || tblBf;
+          if (bf) {
+            td.style.border = "none";
+            for (const side of ["left", "right", "top", "bottom"]) if (bf[side]) td.style["border" + side[0].toUpperCase() + side.slice(1)] = bf[side];
+            if (bf.bg) td.style.background = bf.bg;
+          }
           const sub = kids(tc, "subList")[0];
-          if (sub) kids(sub, "p").forEach(p => walkP(p, td));
+          if (sub) {
+            const va = { TOP: "top", CENTER: "middle", BOTTOM: "bottom" }[sub.getAttribute("vertAlign")];
+            if (va) td.style.verticalAlign = va;
+            kids(sub, "p").forEach(p => walkP(p, td));
+          }
         }
       }
       return table;
     }
 
-    for (const name of names) {
-      const xml = new DOMParser().parseFromString(await zip.file(name).async("string"), "application/xml");
-      if (xml.querySelector("parsererror")) throw new Error("HWPX XML 해석 실패");
-      kids(xml.documentElement, "p").forEach(p => walkP(p, page));
-    }
+    for (const xml of sections) kids(xml.documentElement, "p").forEach(p => walkP(p, page));
     body.innerHTML = "";
     body.appendChild(page);
   }
@@ -904,6 +1493,7 @@
   }
 
   const DOC_RENDERERS = { pdf: renderPdf, docx: renderDocx, hwpx: renderHwpx };
+  for (const ext of Object.keys(IMAGE_MIME)) DOC_RENDERERS[ext] = renderImage;
   const extOf = (name) => (name.split(".").pop() || "").toLowerCase();
 
   // 어떤 패널에 어떤 문서가 열려 있는지 기억 → 새로고침 후 복원
@@ -911,7 +1501,8 @@
     try {
       localStorage.setItem("panelDocs", JSON.stringify({
         split: splitOn,
-        ids: [panels[0] && panels[0].docId || null, panels[1] && panels[1].docId || null]
+        ids: [panels[0] && panels[0].docId || null, panels[1] && panels[1].docId || null],
+        memoIds: [panels[0] && panels[0].memoId || null, panels[1] && panels[1].memoId || null]
       }));
     } catch (e) {}
   }
@@ -922,7 +1513,7 @@
     if (!DOC_RENDERERS[ext]) {
       alert(ext === "hwp" || ext === "doc"
         ? `.${ext} (구형 바이너리 포맷)은 지원하지 않습니다. ${ext === "hwp" ? "한글에서 .hwpx" : "Word에서 .docx"}로 저장 후 열어주세요.`
-        : "PDF, DOCX, HWPX 파일만 열 수 있습니다.");
+        : "PDF, DOCX, HWPX, 이미지(PNG/JPG/GIF/WEBP/BMP) 파일만 열 수 있습니다.");
       return;
     }
     const buf = await file.arrayBuffer();
@@ -949,24 +1540,104 @@
     }
   }
 
+  // 문서 상태 정리 (다른 문서를 열거나 닫을 때)
+  function cleanupDoc(p) {
+    if (p.annUnsub) { p.annUnsub(); p.annUnsub = null; }
+    if (p.docRO) { p.docRO.disconnect(); p.docRO = null; }
+    clearTimeout(p.roTimer);
+    clearTimeout(p.posTimer);
+    p.pdfSeq++;
+    p.pdfIOs.forEach(o => o.disconnect());
+    p.pdfIOs = [];
+    if (p.objUrl) { URL.revokeObjectURL(p.objUrl); p.objUrl = null; }
+    saveNoteNow();
+    hideAnnPop();
+    setRectMode(p, false);
+    closeFind(p);
+    p.anns = {};
+    p.annsLoaded = false;
+    p.orphans = new Set();
+    p.docReady = false;
+    p.pendingEdit = null;
+    p.pendingJump = null;
+    p.docBuf = null;
+    renderAnnList(p);
+    updateDocTools(p);
+  }
+
+  // PDF는 패널 폭이 바뀌면(분할 드래그 등) 폭에 맞춰 다시 그린다.
+  // 폭/배율이 바뀌면 PDF를 다시 그린다 (스크롤 비율 유지)
+  async function rerenderPdf(p) {
+    const body = p.panelEl.querySelector(".doc-body");
+    const token = p.docToken;
+    const ratio = body.scrollTop / (body.scrollHeight || 1);
+    await DOC_RENDERERS[p.docExt](p.docBuf.slice(0), body, p, p.docExt);
+    if (token !== p.docToken || !p.docReady) return;
+    body.scrollTop = ratio * body.scrollHeight;
+    applyAnns(p);
+    updateDocTools(p);
+  }
+
+  // PDF는 패널 폭이 바뀌면(분할 드래그 등) 폭에 맞춰 다시 그린다.
+  function watchPdfResize(p, token) {
+    const body = p.panelEl.querySelector(".doc-body");
+    let lastW = body.clientWidth;
+    p.docRO = new ResizeObserver(() => {
+      clearTimeout(p.roTimer);
+      p.roTimer = setTimeout(() => {
+        const w = body.clientWidth;
+        if (token !== p.docToken || !p.docReady || w === 0 || Math.abs(w - lastW) < 40) return;
+        lastW = w;
+        rerenderPdf(p);
+      }, 400);
+    });
+    p.docRO.observe(body);
+  }
+
   async function openDoc(panelIdx, docId) {
     const p = panels[panelIdx];
     const d = getDoc(docId);
     if (!p || !d) return;
-    const renderer = DOC_RENDERERS[extOf(d.name)];
+    const ext = extOf(d.name);
+    const renderer = DOC_RENDERERS[ext];
     if (!renderer) return;
+    cleanupDoc(p);
     const token = ++p.docToken;
     p.docId = docId;
+    p.docExt = ext;
+    p.docKind = ext === "pdf" ? "pdf" : IMAGE_MIME[ext] ? "image" : "text";
+    const pos = loadDocPos(docId);
+    p.zoom = (pos && pos.z) || 1;
     p.panelEl.classList.add("doc-open");
     p.panelEl.querySelector(".doc-name").textContent = "📄 " + d.name;
     const body = p.panelEl.querySelector(".doc-body");
     body.innerHTML = '<div class="doc-msg">⏳ 문서를 불러오는 중...</div>';
     saveDocState();
     renderDocList();
+    renderAnnList(p);
     try {
       const buf = await loadDocBuffer(docId, d);
       if (token !== p.docToken) return;  // 그 사이 다른 문서를 열었거나 닫힘
-      await renderer(buf.slice(0), body);
+      p.docBuf = buf;
+      await renderer(buf.slice(0), body, p, ext);
+      if (token !== p.docToken) return;
+      p.docReady = true;
+      updateDocTools(p);
+      if (p.docKind === "pdf") watchPdfResize(p, token);
+      // 하이라이트/메모는 업로드된 문서에만 저장된다(임시 문서 제외)
+      if (!d.local) {
+        p.annUnsub = onValue(ref(db, `annotations/${docId}`), (snap) => {
+          p.anns = snap.val() || {};
+          p.annsLoaded = true;
+          if (p.docReady) applyAnns(p);
+          renderAnnList(p);
+        }, () => {});
+      } else p.annsLoaded = true;
+      // 읽던 위치 복원 (바로 이동할 대상이 있으면 그쪽 우선)
+      indexDocText(p, docId, d);
+      if (pos && !p.pendingJump) requestAnimationFrame(() => { body.scrollTop = pos.r * body.scrollHeight; p.posReady = true; });
+      else p.posReady = true;
+      processPendingJump(p);
     } catch (e) {
       if (token !== p.docToken) return;
       body.innerHTML = "";
@@ -981,6 +1652,7 @@
     const p = panels[panelIdx];
     if (!p) return;
     p.docToken++;
+    cleanupDoc(p);
     p.docId = null;
     p.panelEl.classList.remove("doc-open");
     p.panelEl.querySelector(".doc-body").innerHTML = "";
@@ -989,10 +1661,522 @@
     requestAnimationFrame(() => renderGutter(panelIdx));
   }
 
-  function sidebarClickDoc(docId) {
-    if (!splitOn) openDoc(0, docId);
-    else if (panels[0] && panels[0].docId === docId) openDoc(1, docId);
-    else openDoc(0, docId);
+  // 읽던 위치(스크롤 비율, 배율)를 문서별로 이 브라우저에 기억
+  function loadDocPos(id) {
+    try { return (JSON.parse(localStorage.getItem("docPos")) || {})[id] || null; } catch (e) { return null; }
+  }
+  function saveDocPos(id, pos) {
+    try {
+      const all = JSON.parse(localStorage.getItem("docPos")) || {};
+      all[id] = { ...pos, t: Date.now() };
+      const keys = Object.keys(all);
+      if (keys.length > 100) keys.sort((a, b) => all[a].t - all[b].t).slice(0, keys.length - 100).forEach(k => delete all[k]);
+      localStorage.setItem("docPos", JSON.stringify(all));
+    } catch (e) {}
+  }
+  function saveDocPosSoon(p) {
+    clearTimeout(p.posTimer);
+    p.posTimer = setTimeout(() => {
+      if (!p.docId || !p.docReady || !p.posReady) return;
+      const body = p.panelEl.querySelector(".doc-body");
+      saveDocPos(p.docId, { r: body.scrollTop / (body.scrollHeight || 1), z: p.zoom });
+    }, 500);
+  }
+
+  // 전체 검색용 색인: 문서를 처음 열 때 텍스트를 DB(docText/{id})에 저장해 둔다 (PDF는 쪽별)
+  function indexDocText(p, docId, d) {
+    if (d.local || d.indexed || p.docKind === "image") return;
+    const root = textRootOf(p);
+    if (!root) return;
+    let pages = p.docKind === "pdf"
+      ? Array.from(root.querySelectorAll(".pdf-page")).map(pg => pg.textContent)
+      : [root.textContent];
+    let total = 0;   // 너무 큰 문서는 앞부분만 (약 1.5M자)
+    pages = pages.map(t => { const keep = Math.max(0, 1500000 - total); total += t.length; return t.slice(0, keep); });
+    if (!pages.some(t => t.trim())) return;   // 글자가 없는 스캔본은 색인할 것이 없음
+    set(ref(db, `docText/${docId}`), { pages })
+      .then(() => update(ref(db, `docs/${docId}`), { indexed: true }))
+      .then(() => { if (docTextCache) docTextCache[docId] = { pages }; })
+      .catch(() => {});
+  }
+
+  // 특정 위치로 문서 열기: jump = { ann: id } | { page: n } | { find: "검색어", page?: n }
+  function openDocAt(panelIdx, docId, jump) {
+    const p = panels[panelIdx];
+    if (p && p.docId === docId && p.docReady) { p.pendingJump = jump; processPendingJump(p); return; }
+    openDoc(panelIdx, docId);
+    if (panels[panelIdx]) panels[panelIdx].pendingJump = jump;  // openDoc의 동기 구간(cleanup) 이후에 지정
+  }
+  function processPendingJump(p) {
+    const j = p.pendingJump;
+    if (!j || !p.docReady) return;
+    const body = p.panelEl.querySelector(".doc-body");
+    if (j.ann) {
+      if (jumpToAnn(p, j.ann)) p.pendingJump = null;
+      else if (p.annsLoaded) { p.pendingJump = null; statusEl.textContent = "⚠️ 문서에서 해당 위치를 찾을 수 없습니다."; }
+      return;
+    }
+    p.pendingJump = null;
+    p.posReady = true;
+    if (j.find) {
+      openFind(p, j.find);
+      if (j.page) selectFindOnPage(p, j.page);
+    } else if (j.page) jumpPage(p, j.page);
+  }
+
+  // DOCS 클릭: 문서를 메모 위가 아니라 오른쪽 패널에 띄운다 (왼쪽=메모, 오른쪽=문서)
+  function openDocInRight(docId, jump) {
+    if (!splitOn) setSplit(true);
+    if (jump) openDocAt(1, docId, jump); else openDoc(1, docId);
+  }
+  function sidebarClickDoc(docId) { openDocInRight(docId); }
+
+  // ── 하이라이트 / 메모(주석) ──
+  // 주석 위치는 문서 텍스트 전체(.doc-textroot의 텍스트 노드 이어붙인 문자열)에서의 글자 오프셋으로 저장하고,
+  // 렌더링 후 <mark>로 다시 입힌다. 문서가 바뀌어 오프셋이 어긋나면 저장해 둔 인용문(quote)으로 위치를 다시 찾는다.
+  const ANN_COLORS = { y: "#ffe066", g: "#8ce99a", b: "#74c0fc", p: "#faa2c1" };
+  const annPop = document.createElement("div");
+  annPop.id = "ann-pop";
+  document.body.appendChild(annPop);
+  let annPopState = null;   // { p, mode: "create" | "edit", sel?, annId? }
+  let noteTimer = null;
+
+  const annPath = (p) => `annotations/${p.docId}`;
+  const textRootOf = (p) => p.panelEl.querySelector(".doc-textroot");
+  const trunc = (s, n) => s.length > n ? s.slice(0, n) + "…" : s;
+
+  function textNodesOf(root) {
+    const out = [];
+    const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    while (w.nextNode()) out.push(w.currentNode);
+    return out;
+  }
+
+  function wrapRange(root, s, e, a, cls = "ann") {
+    let pos = 0;
+    const todo = [];
+    for (const n of textNodesOf(root)) {
+      const ns = pos, ne = pos + n.nodeValue.length;
+      pos = ne;
+      if (ne <= s) continue;
+      if (ns >= e) break;
+      todo.push({ n, from: Math.max(s, ns) - ns, to: Math.min(e, ne) - ns });
+    }
+    for (const t of todo) {
+      let node = t.n;
+      if (t.from > 0) node = node.splitText(t.from);
+      if (t.to - t.from < node.nodeValue.length) node.splitText(t.to - t.from);
+      const m = document.createElement("mark");
+      m.className = cls + (a.note ? " has-note" : "");
+      m.dataset.id = a.id;
+      m.dataset.color = a.color || "y";
+      if (a.note) m.title = a.note;
+      node.parentNode.insertBefore(m, node);
+      m.appendChild(node);
+    }
+  }
+
+  function applyAnns(p) {
+    const body = p.panelEl.querySelector(".doc-body");
+    body.querySelectorAll(".ann-rect").forEach(r => r.remove());
+    const root = textRootOf(p);
+    const list = Object.entries(p.anns || {}).map(([id, a]) => ({ id, ...a }));
+    p.orphans = new Set();
+    if (root) {
+      root.querySelectorAll("mark.ann").forEach(m => m.replaceWith(...m.childNodes));
+      root.normalize();
+      const full = textNodesOf(root).map(n => n.nodeValue).join("");
+      for (const a of list.filter(a => a.type !== "rect").sort((x, y) => x.start - y.start)) {
+        let s = a.start, e = a.end;
+        if (full.slice(s, e) !== a.quote) {
+          const i = a.quote ? full.indexOf(a.quote) : -1;
+          if (i < 0) { p.orphans.add(a.id); continue; }
+          s = i; e = i + a.quote.length;
+        }
+        wrapRange(root, s, e, a);
+      }
+    }
+    // 영역(사각형) 표시: 페이지 크기에 대한 비율로 저장돼 있어 확대/축소해도 맞는다
+    const pages = body.querySelectorAll(".ann-page");
+    for (const a of list.filter(a => a.type === "rect")) {
+      const pg = pages[a.page - 1];
+      if (!pg) { p.orphans.add(a.id); continue; }
+      const r = document.createElement("div");
+      r.className = "ann-rect" + (a.note ? " has-note" : "");
+      r.dataset.id = a.id;
+      r.dataset.color = a.color || "y";
+      r.style.cssText = `left:${a.x * 100}%;top:${a.y * 100}%;width:${a.w * 100}%;height:${a.h * 100}%`;
+      if (a.note) r.title = a.note;
+      pg.appendChild(r);
+    }
+    renderAnnList(p);
+    if (p.pendingEdit) {
+      const m = body.querySelector(`mark.ann[data-id="${p.pendingEdit}"], .ann-rect[data-id="${p.pendingEdit}"]`);
+      if (m) {
+        p.pendingEdit = null;
+        showEditPop(p, m.dataset.id, m.getBoundingClientRect());
+        const ta = annPop.querySelector(".ann-note");
+        if (ta) ta.focus();
+      }
+    }
+    processPendingJump(p);
+  }
+
+  function jumpToAnn(p, id) {
+    const el = p.panelEl.querySelector(`mark.ann[data-id="${id}"], .ann-rect[data-id="${id}"]`);
+    if (!el) return false;
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    el.classList.add("flash");
+    setTimeout(() => el.classList.remove("flash"), 1500);
+    return true;
+  }
+
+  function currentSelection(p) {
+    const root = textRootOf(p);
+    const sel = window.getSelection();
+    if (!root || !sel.rangeCount || sel.isCollapsed) return null;
+    const r = sel.getRangeAt(0);
+    if (!root.contains(r.commonAncestorContainer)) return null;
+    const pre = document.createRange();
+    pre.selectNodeContents(root);
+    pre.setEnd(r.startContainer, r.startOffset);
+    let quote = r.toString();
+    const start = pre.toString().length + (quote.length - quote.trimStart().length);
+    quote = quote.trim();
+    if (!quote || quote.length > 5000) return null;
+    const sc = r.startContainer.nodeType === 1 ? r.startContainer : r.startContainer.parentElement;
+    const pgEl = sc && sc.closest(".pdf-page");
+    const out = { start, end: start + quote.length, quote };
+    if (pgEl) out.page = parseInt(pgEl.dataset.n, 10);   // 인용/내보내기에서 쪽 번호로 쓴다
+    return out;
+  }
+
+  function colorDots(current) {
+    return Object.entries(ANN_COLORS).map(([k, c]) =>
+      `<button class="ann-dot${k === current ? " cur" : ""}" data-color="${k}" style="background:${c}" title="하이라이트"></button>`).join("");
+  }
+
+  function placePop(rect) {
+    annPop.style.display = "block";
+    const w = annPop.offsetWidth, h = annPop.offsetHeight;
+    const left = Math.min(Math.max(rect.left, 8), Math.max(8, window.innerWidth - w - 8));
+    let top = rect.bottom + 8;
+    if (top + h > window.innerHeight - 8) top = Math.max(8, rect.top - h - 8);
+    annPop.style.left = left + "px";
+    annPop.style.top = top + "px";
+  }
+
+  function showCreatePop(p, sel, rect) {
+    annPopState = { p, mode: "create", sel };
+    annPop.innerHTML = colorDots("") + '<button class="ann-btn" data-act="note">💬 메모</button><button class="ann-btn" data-act="quote" title="왼쪽 메모에 출처와 함께 인용">📋 인용</button>';
+    placePop(rect);
+  }
+
+  function showEditPop(p, annId, rect) {
+    const a = p.anns[annId];
+    if (!a) return;
+    saveNoteNow();
+    annPopState = { p, mode: "edit", annId };
+    annPop.innerHTML = colorDots(a.color) + (a.type === "rect" ? "" : '<button class="ann-btn" data-act="quote" title="왼쪽 메모에 출처와 함께 인용">📋</button>') + '<button class="ann-btn danger" data-act="del" title="삭제">🗑</button>' +
+      '<textarea class="ann-note" rows="3" placeholder="메모를 입력하세요..."></textarea><div class="ann-quote"></div>';
+    annPop.querySelector(".ann-note").value = a.note || "";
+    annPop.querySelector(".ann-quote").textContent = a.type === "rect" ? `▭ 영역 (${a.page}쪽)` : "“" + trunc(a.quote, 80) + "”";
+    placePop(rect);
+  }
+
+  function hideAnnPop() {
+    saveNoteNow();
+    annPop.style.display = "none";
+    annPopState = null;
+  }
+
+  function saveNoteNow() {
+    clearTimeout(noteTimer);
+    const st = annPopState;
+    if (!st || st.mode !== "edit") return;
+    const ta = annPop.querySelector(".ann-note");
+    const a = st.p.anns && st.p.anns[st.annId];
+    if (!ta || !a || (a.note || "") === ta.value) return;
+    update(ref(db, `${annPath(st.p)}/${st.annId}`), { note: ta.value }).catch((e) => { statusEl.textContent = "❌ " + e.message; });
+  }
+
+  // 문서에서 고른 문장을 (문서가 아닌) 열려 있는 메모 끝에 "> 인용 / — 출처" 형태로 붙인다
+  function quoteToMemo(docPanel, text, page) {
+    const idx = panels.findIndex(pp => pp && pp !== docPanel && pp.memoId && !pp.docId);
+    const target = idx >= 0 ? idx : panels.findIndex(pp => pp && pp.memoId && !pp.docId);
+    if (target < 0) { statusEl.textContent = "⚠️ 인용할 메모를 먼저 열어주세요 (분할화면에서 한쪽에 메모를 여세요)."; return; }
+    const tp = panels[target];
+    const d = getDoc(docPanel.docId);
+    const src = `— ${d ? d.name : "문서"}${page ? " p." + page : ""}`;
+    const lines = ["> " + text.replace(/\s+/g, " ").trim(), src];
+    const last = tp.editorEl.querySelector("p:last-child");
+    const lastEmpty = last && (last.innerHTML === "<br>" || last.textContent === "");
+    lines.forEach((ln, i) => {
+      let pe;
+      if (i === 0 && lastEmpty) { pe = last; pe.textContent = ln; }
+      else { pe = document.createElement("p"); pe.textContent = ln; tp.editorEl.appendChild(pe); }
+    });
+    const blank = document.createElement("p");
+    blank.innerHTML = "<br>";
+    tp.editorEl.appendChild(blank);
+    onEditorChanged(target);
+    tp.editorEl.scrollTop = tp.editorEl.scrollHeight;
+    statusEl.textContent = "📋 메모에 인용했습니다 (저장 필요)";
+  }
+
+  function createAnn(p, sel, color, openEdit) {
+    const r = push(ref(db, annPath(p)));
+    if (openEdit) p.pendingEdit = r.key;
+    window.getSelection().removeAllRanges();
+    hideAnnPop();
+    set(r, { start: sel.start, end: sel.end, quote: sel.quote, color, note: "", ts: Date.now(), ...(sel.page ? { page: sel.page } : {}) })
+      .catch((e) => { statusEl.textContent = "❌ " + e.message; });
+  }
+
+  annPop.addEventListener("mousedown", (e) => {
+    if (e.target.tagName !== "TEXTAREA") e.preventDefault();  // 선택 영역/포커스 유지
+  });
+  annPop.addEventListener("click", (e) => {
+    const st = annPopState;
+    if (!st) return;
+    const dot = e.target.closest(".ann-dot"), btn = e.target.closest(".ann-btn");
+    if (dot) {
+      if (st.mode === "create") createAnn(st.p, st.sel, dot.dataset.color, false);
+      else update(ref(db, `${annPath(st.p)}/${st.annId}`), { color: dot.dataset.color });
+    } else if (btn && btn.dataset.act === "note" && st.mode === "create") {
+      createAnn(st.p, st.sel, "y", true);
+    } else if (btn && btn.dataset.act === "quote") {
+      const a = st.mode === "create" ? st.sel : st.p.anns[st.annId];
+      if (a) {
+        let page = a.page;
+        if (!page && st.mode === "edit") {
+          const mk = st.p.panelEl.querySelector(`mark.ann[data-id="${st.annId}"]`);
+          const pgEl = mk && mk.closest(".pdf-page");
+          if (pgEl) page = parseInt(pgEl.dataset.n, 10);
+        }
+        quoteToMemo(st.p, a.quote, page);
+      }
+      if (st.mode === "create") window.getSelection().removeAllRanges();
+      hideAnnPop();
+    } else if (btn && btn.dataset.act === "del" && st.mode === "edit") {
+      const { p, annId } = st;
+      hideAnnPop();
+      remove(ref(db, `${annPath(p)}/${annId}`));
+    }
+  });
+  annPop.addEventListener("input", (e) => {
+    if (!e.target.classList.contains("ann-note")) return;
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(saveNoteNow, 600);
+  });
+  document.addEventListener("mousedown", (e) => { if (!annPop.contains(e.target)) hideAnnPop(); });
+
+  // 문서 본문에서 드래그/클릭이 끝났을 때: 선택이 있으면 하이라이트 팝업, 기존 하이라이트를 눌렀으면 편집 팝업
+  function onDocPointerUp(panelIdx, e) {
+    setTimeout(() => {
+      const p = panels[panelIdx];
+      const d = p && p.docId && getDoc(p.docId);
+      if (!p || !p.docReady || !d || d.local) return;
+      const sel = currentSelection(p);
+      if (sel) {
+        showCreatePop(p, sel, window.getSelection().getRangeAt(0).getBoundingClientRect());
+        return;
+      }
+      const mark = e.target.closest && e.target.closest("mark.ann, .ann-rect");
+      if (mark && !p.rectMode) showEditPop(p, mark.dataset.id, mark.getBoundingClientRect());
+    }, 0);
+  }
+
+  // ── 문서 도구 모음: 쪽 이동, 확대/축소, 문서 내 검색, 영역 표시 ──
+  const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2, 3];
+  function updateDocTools(p) {
+    const q = (sel) => p.panelEl.querySelector(sel);
+    const d = p.docId && getDoc(p.docId);
+    const ready = !!(d && p.docReady);
+    q(".pdf-nav").hidden = !(ready && p.docKind === "pdf");
+    q(".zoom-ctl").hidden = !(ready && p.docKind !== "text");
+    q(".find-btn").hidden = !(ready && textRootOf(p));
+    q(".rect-btn").hidden = !(ready && !d.local && p.docKind !== "text");
+    q(".zoom-val").textContent = Math.round((p.zoom || 1) * 100) + "%";
+    if (ready && p.docKind === "pdf") {
+      q(".pg-total").textContent = p.pdfPages || 1;
+      q(".pg-input").max = p.pdfPages || 1;
+      updateCurrentPage(p);
+    }
+  }
+  function currentPage(p) {
+    const body = p.panelEl.querySelector(".doc-body");
+    const top = body.getBoundingClientRect().top;
+    let cur = 1;
+    const line = Math.max(80, body.clientHeight * 0.3);  // 화면 위쪽 30% 지점에 걸친 쪽을 현재 쪽으로
+    body.querySelectorAll(".pdf-page").forEach((pg, i) => { if (pg.getBoundingClientRect().top - top <= line) cur = i + 1; });
+    return cur;
+  }
+  function updateCurrentPage(p) {
+    const inp = p.panelEl.querySelector(".pg-input");
+    if (document.activeElement !== inp) inp.value = currentPage(p);
+  }
+  function jumpPage(p, n) {
+    const body = p.panelEl.querySelector(".doc-body");
+    const pg = body.querySelectorAll(".pdf-page")[Math.min(Math.max(n, 1), p.pdfPages || 1) - 1];
+    if (pg) body.scrollTop += pg.getBoundingClientRect().top - body.getBoundingClientRect().top - 8;
+  }
+  function stepZoom(p, dir) {
+    let i = ZOOM_STEPS.findIndex(z => z >= (p.zoom || 1) - 1e-6);
+    if (i < 0) i = ZOOM_STEPS.length - 1;
+    const next = ZOOM_STEPS[Math.min(Math.max(i + dir, 0), ZOOM_STEPS.length - 1)];
+    setZoom(p, next);
+  }
+  function setZoom(p, z) {
+    if (!p.docReady || z === p.zoom) return;
+    p.zoom = z;
+    updateDocTools(p);
+    saveDocPosSoon(p);
+    rerenderPdf(p);   // PDF/이미지 모두 같은 경로로 다시 그림
+  }
+
+  function setRectMode(p, on) {
+    p.rectMode = on;
+    p.panelEl.classList.toggle("rect-mode", on);
+    const btn = p.panelEl.querySelector(".rect-btn");
+    if (btn) btn.classList.toggle("on", on);
+  }
+  function createRectAnn(p, r) {
+    const ref0 = push(ref(db, annPath(p)));
+    p.pendingEdit = ref0.key;
+    set(ref0, { type: "rect", ...r, color: "y", note: "", quote: "", ts: Date.now() })
+      .catch((e) => { statusEl.textContent = "❌ " + e.message; });
+  }
+  function startRect(panelIdx, e) {
+    const p = panels[panelIdx];
+    if (!p || !p.rectMode || e.button !== 0) return;
+    const pageEl = e.target.closest(".ann-page");
+    if (!pageEl) return;
+    e.preventDefault();
+    const r0 = pageEl.getBoundingClientRect();
+    const x0 = Math.min(Math.max(e.clientX, r0.left), r0.right), y0 = Math.min(Math.max(e.clientY, r0.top), r0.bottom);
+    const box = document.createElement("div");
+    box.className = "ann-rect drawing";
+    pageEl.appendChild(box);
+    let rr = null;
+    const move = (ev) => {
+      const x = Math.min(Math.max(ev.clientX, r0.left), r0.right), y = Math.min(Math.max(ev.clientY, r0.top), r0.bottom);
+      rr = { l: Math.min(x, x0) - r0.left, t: Math.min(y, y0) - r0.top, w: Math.abs(x - x0), h: Math.abs(y - y0) };
+      box.style.cssText = `left:${rr.l}px;top:${rr.t}px;width:${rr.w}px;height:${rr.h}px`;
+    };
+    const up = () => {
+      document.removeEventListener("mousemove", move);
+      document.removeEventListener("mouseup", up);
+      box.remove();
+      setRectMode(p, false);  // 한 번 그리면 자동 종료
+      if (!rr || rr.w < 8 || rr.h < 8) return;
+      const page = Array.from(p.panelEl.querySelectorAll(".ann-page")).indexOf(pageEl) + 1;
+      createRectAnn(p, { page, x: rr.l / r0.width, y: rr.t / r0.height, w: rr.w / r0.width, h: rr.h / r0.height });
+    };
+    document.addEventListener("mousemove", move);
+    document.addEventListener("mouseup", up);
+  }
+
+  // 문서 내 검색 (Ctrl+F)
+  function clearFind(p) {
+    const root = textRootOf(p);
+    if (root) {
+      root.querySelectorAll("mark.find").forEach(m => m.replaceWith(...m.childNodes));
+      root.normalize();
+    }
+    p.find = { q: "", n: 0, cur: -1 };
+    const c = p.panelEl.querySelector(".find-count");
+    if (c) c.textContent = "";
+  }
+  function closeFind(p) {
+    clearFind(p);
+    const bar = p.panelEl.querySelector(".find-bar");
+    if (bar) bar.hidden = true;
+  }
+  function runFind(p, q) {
+    clearFind(p);
+    const root = textRootOf(p);
+    if (!q || !root) return;
+    const low = textNodesOf(root).map(n => n.nodeValue).join("").toLowerCase(), lq = q.toLowerCase();
+    const hits = [];
+    for (let i = low.indexOf(lq); i >= 0 && hits.length < 500; i = low.indexOf(lq, i + lq.length)) hits.push(i);
+    hits.forEach((st, k) => wrapRange(root, st, st + q.length, { id: "f" + k }, "find"));
+    p.find = { q, n: hits.length, cur: -1 };
+    findStep(p, 1);
+  }
+  function findStep(p, dir) {
+    const f = p.find, root = textRootOf(p);
+    const c = p.panelEl.querySelector(".find-count");
+    if (!f || !f.n) { if (c) c.textContent = f && f.q ? "결과 없음" : ""; return; }
+    f.cur = (f.cur + dir + f.n) % f.n;
+    root.querySelectorAll("mark.find.cur").forEach(m => m.classList.remove("cur"));
+    const ms = root.querySelectorAll(`mark.find[data-id="f${f.cur}"]`);
+    ms.forEach(m => m.classList.add("cur"));
+    if (ms[0]) ms[0].scrollIntoView({ block: "center" });
+    c.textContent = `${f.cur + 1}/${f.n}`;
+  }
+  // 검색 결과에서 들어왔을 때: 해당 쪽의 첫 번째 일치 항목을 현재 위치로
+  function selectFindOnPage(p, page) {
+    const m = p.panelEl.querySelector(`.pdf-page[data-n="${page}"] mark.find`);
+    if (!m || !p.find.n) return;
+    p.find.cur = parseInt(m.dataset.id.slice(1), 10) - 1;
+    findStep(p, 1);
+  }
+  function openFind(p, q) {
+    const bar = p.panelEl.querySelector(".find-bar");
+    const inp = bar.querySelector(".find-input");
+    bar.hidden = false;
+    if (q !== undefined) inp.value = q;
+    inp.focus();
+    inp.select();
+    if (inp.value) runFind(p, inp.value);
+  }
+  let lastDocPanel = 0;
+  const activeDocPanel = () => {
+    const ok = (p) => p && p.docId && p.docReady;
+    return ok(panels[lastDocPanel]) ? panels[lastDocPanel] : panels.find(ok) || null;
+  };
+
+  // 상단 "💬 N" 버튼: 이 문서의 하이라이트/메모 목록
+  function renderAnnList(p) {
+    const btn = p.panelEl.querySelector(".ann-count");
+    const list = p.panelEl.querySelector(".ann-list");
+    const d = p.docId && getDoc(p.docId);
+    const key = (a) => a.type === "rect" ? 1e12 + (a.page || 0) : a.start;
+    const ids = Object.keys(p.anns || {}).sort((x, y) => key(p.anns[x]) - key(p.anns[y]));
+    btn.hidden = !d || d.local;
+    btn.textContent = "💬 " + ids.length;
+    list.innerHTML = "";
+    if (!ids.length) {
+      list.innerHTML = '<div class="ann-empty">텍스트를 드래그해서<br>하이라이트나 메모를 추가하세요</div>';
+      return;
+    }
+    ids.forEach(id => {
+      const a = p.anns[id];
+      const item = document.createElement("div");
+      item.className = "ann-item";
+      const chip = document.createElement("span");
+      chip.className = "ann-chip";
+      chip.style.background = ANN_COLORS[a.color] || ANN_COLORS.y;
+      const txt = document.createElement("div");
+      txt.className = "ann-item-text";
+      const q = document.createElement("div");
+      q.className = "ann-item-quote";
+      q.textContent = (a.type === "rect" ? `▭ ${a.page}쪽 영역` : trunc(a.quote, 60)) + (p.orphans && p.orphans.has(id) ? "  (위치를 찾을 수 없음)" : "");
+      txt.appendChild(q);
+      if (a.note) {
+        const n = document.createElement("div");
+        n.className = "ann-item-note";
+        n.textContent = trunc(a.note, 120);
+        txt.appendChild(n);
+      }
+      item.append(chip, txt);
+      item.addEventListener("click", () => {
+        list.hidden = true;
+        if (!jumpToAnn(p, id)) statusEl.textContent = "⚠️ 문서에서 해당 위치를 찾을 수 없습니다.";
+      });
+      list.appendChild(item);
+    });
   }
 
   async function deleteDoc(id) {
@@ -1003,6 +2187,9 @@
     cacheDelete(id);
     if (d.local) { delete localDocs[id]; renderDocList(); return; }
     try { await deleteObject(sRef(storage, d.path)); } catch (e) {}
+    remove(ref(db, `annotations/${id}`));
+    remove(ref(db, `docText/${id}`));
+    if (docTextCache) delete docTextCache[id];
     remove(ref(db, `docs/${id}`));
   }
 
@@ -1032,45 +2219,286 @@
     });
   }
 
-  function loadMemoInPanel(panelIdx, memoId) {
+  function loadMemoInPanel(panelIdx, memoId, opts = {}) {
     const p = panels[panelIdx];
     if (!p) return;
+    if (p.docId) closeDoc(panelIdx);
     p.memoId = memoId;
     const m = memos[memoId] || {};
+    const scroll = opts.sync ? p.editorEl.scrollTop : 0;
     p.titleEl.value      = m.title   || "";
     p.editorEl.innerHTML = textToHtml(m.content || "");
     p.editorEl.setAttribute("data-placeholder", "여기에 메모를 입력하세요...");
     p.dirty = false;
-    const panelEl = panelsEl.children[splitOn ? panelIdx * 2 : 0];
-    const charcountEl = panelEl ? panelEl.querySelector(".charcount") : null;
-    if (charcountEl) charcountEl.textContent = htmlToText(p.editorEl).length + "자";
+    p.baseTs = m.ts || 0;
+    p.panelEl.querySelector(".conflict-note").hidden = true;
+    // 저장되지 않은 임시 내용이 남아 있으면 복원 여부를 묻는다 (실시간 갱신일 때는 묻지 않음)
+    const draft = opts.sync ? null : readDraft(memoId);
+    if (draft && ((draft.content || "") !== (m.content || "") || (draft.title || "") !== (m.title || ""))) {
+      const when = new Date(draft.ts).toLocaleString();
+      if (confirm(`저장되지 않은 임시 내용이 있습니다 (${when}).\n복원할까요?\n\n[취소]를 누르면 임시 내용을 버립니다.`)) {
+        p.titleEl.value = draft.title || "";
+        p.editorEl.innerHTML = textToHtml(draft.content || "");
+        p.dirty = true;
+        if ((m.ts || 0) > (draft.base || 0)) p.panelEl.querySelector(".conflict-note").hidden = false;
+      } else clearDraft(memoId);
+    } else if (draft) clearDraft(memoId);
+    styleParas(p.editorEl);
+    p.panelEl.querySelector(".charcount").textContent = htmlToText(p.editorEl).length + "자";
+    p.panelEl.querySelector(".meta-btn").classList.toggle("has", !!(m.folder || (m.tags && m.tags.length) || m.pinned));
     // pins 로드
     const savedPins = m.pins ? new Set(m.pins) : new Set();
     pins[memoId] = savedPins;
-    requestAnimationFrame(() => renderGutter(panelIdx));
+    requestAnimationFrame(() => { renderGutter(panelIdx); if (scroll) p.editorEl.scrollTop = scroll; });
     renderList();
+    saveDocState();
   }
 
   function savePanel(panelIdx, isAuto = false) {
     const p = panels[panelIdx];
     if (!p || !p.memoId) return;
-    const panelEl = panelsEl.children[splitOn ? panelIdx * 2 : 0];
-    const saveBtn = panelEl ? panelEl.querySelector(".save-btn") : null;
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "저장 중..."; }
+    const saveBtn = p.panelEl.querySelector(".save-btn");
     const title   = p.titleEl.value.trim() || "제목 없음";
     const content = htmlToText(p.editorEl);
     const pinArr  = p.memoId && pins[p.memoId] ? Array.from(pins[p.memoId]) : [];
-    set(ref(db, `memos/${p.memoId}`), { title, content, pins: pinArr })
+
+    writeDraft(p);   // 저장이 끝날 때까지 안전장치
+    if (!navigator.onLine) {
+      statusEl.textContent = "📴 오프라인 — 임시 저장됨. 연결되면 자동으로 저장됩니다.";
+      return;
+    }
+    // 내가 불러온 뒤 다른 기기/탭에서 먼저 수정했다면 덮어쓰기 전에 확인
+    const cur = memos[p.memoId];
+    if (cur && (cur.ts || 0) > p.baseTs && ((cur.content || "") !== content || (cur.title || "") !== title)) {
+      p.panelEl.querySelector(".conflict-note").hidden = false;
+      if (isAuto) { statusEl.textContent = "⚠️ 다른 곳에서 수정됨 — 자동저장 보류 (직접 저장하면 덮어씁니다)"; return; }
+      if (!confirm("다른 기기(또는 탭)에서 이 메모가 먼저 수정되었습니다.\n내 내용으로 덮어쓸까요?")) return;
+    }
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = "저장 중..."; }
+    const ts = Date.now();
+    const prevBase = p.baseTs;
+    p.baseTs = ts;   // 내 저장이 되돌아오는 이벤트를 "남의 수정"으로 오해하지 않도록 먼저 갱신
+    update(ref(db, `memos/${p.memoId}`), { title, content, pins: pinArr.length ? pinArr : null, ts })
       .then(() => {
         p.dirty = false;
+        clearDraft(p.memoId);
+        p.panelEl.querySelector(".conflict-note").hidden = true;
         statusEl.textContent = (isAuto ? "💾 자동저장 " : "✅ ") + new Date().toLocaleTimeString();
         if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
       })
       .catch((e) => {
+        p.baseTs = prevBase;
         statusEl.textContent = "❌ " + e.message;
         if (saveBtn) { saveBtn.textContent = "저장"; saveBtn.disabled = false; }
       });
   }
+
+  // 오프라인 → 온라인 복귀 시 저장 못 한 메모를 자동 저장
+  window.addEventListener("online", () => {
+    statusEl.textContent = "🌐 다시 연결됨";
+    panels.forEach((p, i) => { if (p && p.memoId && p.dirty) savePanel(i, true); });
+  });
+  window.addEventListener("offline", () => { statusEl.textContent = "📴 오프라인 — 편집 내용은 이 브라우저에 임시 저장됩니다."; });
+  // 저장 안 된 내용이 있는 채로 탭을 닫으면 임시 저장 후 확인창을 띄운다
+  window.addEventListener("beforeunload", (e) => {
+    const dirty = panels.filter(p => p && p.memoId && p.dirty);
+    if (!dirty.length) return;
+    dirty.forEach(writeDraft);
+    e.preventDefault();
+    e.returnValue = "";
+  });
+
+  // ── 폴더 / 태그 / 고정 ──
+  const metaPop = document.createElement("div");
+  metaPop.id = "meta-pop";
+  document.body.appendChild(metaPop);
+  let metaFor = null;
+  function openMetaPop(panelIdx, anchor) {
+    const p = panels[panelIdx];
+    if (!p || !p.memoId || !memos[p.memoId]) { statusEl.textContent = "⚠️ 먼저 메모를 선택하세요."; return; }
+    const id = p.memoId, m = memos[id];
+    metaFor = id;
+    const folders = [...new Set(Object.values(memos).map(x => x.folder).filter(Boolean))];
+    metaPop.innerHTML = `
+      <label>폴더</label><input type="text" class="m-folder" list="folder-list" maxlength="40" placeholder="예: 업무">
+      <datalist id="folder-list">${folders.map(f => `<option value="${esc(f)}">`).join("")}</datalist>
+      <label>태그 (쉼표로 구분)</label><input type="text" class="m-tags" maxlength="80" placeholder="예: 회의, 아이디어">
+      <label class="pin-row"><input type="checkbox" class="m-pin"> 📌 맨 위에 고정</label>`;
+    metaPop.querySelector(".m-folder").value = m.folder || "";
+    metaPop.querySelector(".m-tags").value = (m.tags || []).join(", ");
+    metaPop.querySelector(".m-pin").checked = !!m.pinned;
+    const r = anchor.getBoundingClientRect();
+    metaPop.style.display = "block";
+    metaPop.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 256)) + "px";
+    metaPop.style.top = (r.bottom + 6) + "px";
+    metaPop.querySelector(".m-folder").focus();
+  }
+  function saveMeta() {
+    if (!metaFor || !memos[metaFor]) return;
+    const folder = metaPop.querySelector(".m-folder").value.trim();
+    const tags = [...new Set(metaPop.querySelector(".m-tags").value.split(",").map(t => t.trim().replace(/^#/, "")).filter(Boolean))];
+    const pinned = metaPop.querySelector(".m-pin").checked;
+    const id = metaFor;
+    update(ref(db, `memos/${id}`), { folder: folder || null, tags: tags.length ? tags : null, pinned: pinned || null })
+      .catch((e) => { statusEl.textContent = "❌ " + e.message; });
+    panels.forEach(pp => { if (pp && pp.memoId === id) pp.panelEl.querySelector(".meta-btn").classList.toggle("has", !!(folder || tags.length || pinned)); });
+  }
+  metaPop.addEventListener("change", saveMeta);
+  metaPop.addEventListener("keydown", (e) => { if (e.key === "Enter") { saveMeta(); metaPop.style.display = "none"; } if (e.key === "Escape") metaPop.style.display = "none"; });
+  document.addEventListener("mousedown", (e) => {
+    if (metaPop.style.display === "block" && !metaPop.contains(e.target) && !e.target.closest(".meta-btn")) { saveMeta(); metaPop.style.display = "none"; }
+  });
+
+  // ── 내보내기 / 백업 / 복원 ──
+  function memoToMarkdown(m) {
+    const meta = [];
+    if (m.folder) meta.push(`folder: ${m.folder}`);
+    if (m.tags && m.tags.length) meta.push(`tags: ${m.tags.join(", ")}`);
+    return (meta.length ? `---\n${meta.join("\n")}\n---\n\n` : "") + `# ${m.title || "제목 없음"}\n\n${m.content || ""}\n`;
+  }
+  function exportMemo(panelIdx, ext) {
+    const p = panels[panelIdx];
+    if (!p || !p.memoId) { statusEl.textContent = "⚠️ 먼저 메모를 선택하세요."; return; }
+    // 화면의 편집 중인 내용을 그대로 내보낸다
+    const m = { ...(memos[p.memoId] || {}), title: p.titleEl.value.trim() || "제목 없음", content: htmlToText(p.editorEl) };
+    downloadBlob(`${safeName(m.title)}.${ext}`, ext === "md" ? memoToMarkdown(m) : m.content, "text/plain;charset=utf-8");
+  }
+  async function buildBackup() {
+    const snap = await get(ref(db, "annotations"));
+    return { app: "memos", version: 1, exportedAt: new Date().toISOString(), memos, trash, docs, annotations: snap.val() || {} };
+  }
+  async function restoreBackup(file) {
+    let data;
+    try { data = JSON.parse(await file.text()); } catch (e) { alert("백업 파일을 읽을 수 없습니다."); return; }
+    if (!data || data.app !== "memos" || !data.memos) { alert("이 앱의 백업 파일이 아닙니다."); return; }
+    const newMemos = Object.keys(data.memos).filter(id => !memos[id]);
+    if (!confirm(`메모 ${Object.keys(data.memos).length}개 중 현재 없는 ${newMemos.length}개를 복원합니다.\n이미 있는 메모는 건드리지 않습니다. 계속할까요?`)) return;
+    const updates = {};
+    newMemos.forEach(id => { updates[`memos/${id}`] = data.memos[id]; });
+    // 주석은 지금도 존재하는 문서에 한해, 없는 것만 복원
+    let annCount = 0;
+    for (const [docId, list] of Object.entries(data.annotations || {})) {
+      if (!docs[docId]) continue;
+      for (const [aid, a] of Object.entries(list)) { updates[`annotations/${docId}/${aid}`] = a; annCount++; }
+    }
+    await update(ref(db), updates);
+    statusEl.textContent = `✅ 복원: 메모 ${newMemos.length}개, 주석 ${annCount}개`;
+    closeModal();
+  }
+  function openBackupModal() {
+    openModal("⬇ 내보내기 / 백업", (body) => {
+      const stack = document.createElement("div");
+      stack.className = "stack";
+      const note = document.createElement("div");
+      note.className = "sub";
+      note.style.color = "#888";
+      note.textContent = "문서 파일(PDF 등)은 Storage에 있어 백업에 포함되지 않고, 목록과 주석 정보만 담깁니다.";
+      const active = panels.findIndex(p => p && p.memoId);
+      stack.append(
+        modalButton("현재 메모 → .md 내려받기", () => exportMemo(active, "md")),
+        modalButton("현재 메모 → .txt 내려받기", () => exportMemo(active, "txt")),
+        modalButton("전체 메모 → ZIP (메모마다 .md 파일)", async () => {
+          await loadScript(CDN + "jszip/3.10.1/jszip.min.js");
+          const zip = new JSZip(), used = new Set();
+          Object.entries(memos).forEach(([id, m]) => {
+            let name = safeName(m.title), n = 2;
+            while (used.has(name)) name = `${safeName(m.title)} (${n++})`;
+            used.add(name);
+            zip.file(name + ".md", memoToMarkdown(m));
+          });
+          downloadBlob(`memos-${new Date().toISOString().slice(0, 10)}.zip`, await zip.generateAsync({ type: "blob" }));
+        }),
+        modalButton("전체 백업 → JSON (메모, 휴지통, 문서 목록, 주석)", async () => {
+          const b = await buildBackup();
+          downloadBlob(`memos-backup-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(b, null, 1), "application/json");
+        }),
+        modalButton("백업 JSON 불러오기 (복원)", () => {
+          const inp = document.createElement("input");
+          inp.type = "file"; inp.accept = ".json,application/json";
+          inp.addEventListener("change", () => inp.files[0] && restoreBackup(inp.files[0]));
+          inp.click();
+        }),
+        note
+      );
+      if (active < 0) { stack.children[0].disabled = stack.children[1].disabled = true; }
+      body.appendChild(stack);
+    });
+  }
+  document.getElementById("backup-btn").addEventListener("click", openBackupModal);
+
+  // ── 주석 모음: 모든 문서의 하이라이트/메모를 한곳에서 보고, 마크다운으로 복사/저장 ──
+  const COLOR_EMOJI = { y: "🟡", g: "🟢", b: "🔵", p: "🩷" };
+  async function openAnnsModal() {
+    let all = {};
+    try { all = (await get(ref(db, "annotations"))).val() || {}; }
+    catch (e) { statusEl.textContent = "❌ " + e.message; return; }
+    const entries = [];
+    for (const [docId, list] of Object.entries(all)) {
+      if (!docs[docId]) continue;
+      for (const [id, a] of Object.entries(list)) entries.push({ docId, id, ...a });
+    }
+    const pos = (a) => a.type === "rect" ? 1e9 + (a.page || 0) : (a.page || 0) * 1e6 + (a.start || 0);
+    entries.sort((x, y) => docs[x.docId].name.localeCompare(docs[y.docId].name, "ko") || pos(x) - pos(y));
+    const label = (a) => a.type === "rect" ? `▭ ${a.page}쪽 영역` : `${a.page ? `p.${a.page} ` : ""}“${a.quote}”`;
+    let onlyNotes = false;
+    const visible = () => entries.filter(a => !onlyNotes || a.note);
+    const toMarkdown = () => {
+      const lines = [`# 주석 모음 (${new Date().toLocaleDateString()})`];
+      let cur = null;
+      for (const a of visible()) {
+        if (a.docId !== cur) { cur = a.docId; lines.push("", `## ${docs[cur].name}`, ""); }
+        lines.push(`- ${COLOR_EMOJI[a.color] || "🟡"} ${a.type === "rect" ? label(a) : (a.page ? `(p.${a.page}) ` : "") + `"${a.quote.replace(/\s+/g, " ")}"`}${a.note ? ` — ${a.note.replace(/\n+/g, " ")}` : ""}`);
+      }
+      return lines.join("\n") + "\n";
+    };
+    openModal("💬 주석 모음", (body, foot) => {
+      const render = () => {
+        body.innerHTML = "";
+        const bar = document.createElement("label");
+        bar.style.cssText = "display:flex;gap:6px;align-items:center;margin-bottom:6px;cursor:pointer";
+        const cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = onlyNotes;
+        cb.addEventListener("change", () => { onlyNotes = cb.checked; render(); });
+        bar.append(cb, "메모가 있는 것만 보기");
+        body.appendChild(bar);
+        const list = visible();
+        if (!list.length) { const e = document.createElement("div"); e.className = "empty"; e.textContent = entries.length ? "조건에 맞는 주석이 없습니다." : "아직 하이라이트나 메모가 없습니다."; body.appendChild(e); return; }
+        let cur = null;
+        for (const a of list) {
+          if (a.docId !== cur) { cur = a.docId; const h = document.createElement("div"); h.className = "sec"; h.textContent = "📄 " + docs[cur].name; body.appendChild(h); }
+          const row = document.createElement("div");
+          row.className = "ann-row";
+          const dot = document.createElement("span");
+          dot.className = "dot";
+          dot.style.background = ANN_COLORS[a.color] || ANN_COLORS.y;
+          const t = document.createElement("div");
+          const q = document.createElement("div");
+          q.className = "q";
+          q.textContent = trunc(label(a), 140);
+          t.appendChild(q);
+          if (a.note) { const n = document.createElement("div"); n.className = "n"; n.textContent = a.note; t.appendChild(n); }
+          row.append(dot, t);
+          row.addEventListener("click", () => { closeModal(); openDocInRight(a.docId, { ann: a.id }); });
+          body.appendChild(row);
+        }
+      };
+      render();
+      foot.hidden = false;
+      foot.append(
+        modalButton("📋 마크다운 복사", async () => {
+          try { await navigator.clipboard.writeText(toMarkdown()); statusEl.textContent = "📋 주석 모음을 복사했습니다."; } catch (e) { statusEl.textContent = "❌ 복사 실패: " + e.message; }
+        }),
+        modalButton("📝 새 메모로 저장", () => {
+          const r = push(memosRef), now = Date.now();
+          set(r, { title: `주석 모음 ${new Date().toLocaleDateString()}`, content: toMarkdown(), created: now, ts: now })
+            .then(() => { closeModal(); loadMemoInPanel(0, r.key); });
+        }),
+        modalButton("⬇ .md", () => downloadBlob(`주석 모음 ${new Date().toISOString().slice(0, 10)}.md`, toMarkdown(), "text/plain;charset=utf-8"))
+      );
+    });
+  }
+  document.getElementById("anns-btn").addEventListener("click", openAnnsModal);
 
   // ── 1분마다 자동저장 (변경된 패널만) ──
   setInterval(() => {
@@ -1088,6 +2516,20 @@
       });
       const anyFocused = panels.some(p => p && (document.activeElement === p.editorEl || document.activeElement === p.titleEl));
       if (!anyFocused && panels[0] && panels[0].memoId) savePanel(0);
+    }
+
+    // Ctrl(Cmd) + K: 전체 검색
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === "k") {
+      e.preventDefault();
+      if (window.innerWidth <= 768) sidebarEl.classList.remove("collapsed");
+      searchInput.focus();
+      searchInput.select();
+    }
+
+    // Ctrl(Cmd) + F: 열려 있는 문서 안에서 검색 (문서가 없으면 브라우저 기본 검색)
+    if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === "f") {
+      const dp = activeDocPanel();
+      if (dp && textRootOf(dp)) { e.preventDefault(); openFind(dp); }
     }
 
     // Ctrl(Cmd) + Alt + C: 포커스된 에디터 글꼴 Consolas 전환/해제
@@ -1121,6 +2563,7 @@
     splitToggle.textContent = splitOn ? "⊞ 분할화면 ON" : "⊟ 분할화면";
     splitToggle.classList.toggle("on", splitOn);
     rebuildPanels();
+    saveDocState();
   }
   splitToggle.addEventListener("click", () => setSplit(!splitOn));
 
@@ -1168,48 +2611,311 @@
   function sidebarClickMemo(memoId) {
     if (!splitOn) {
       loadMemoInPanel(0, memoId);
+    } else if (panels[1] && panels[1].docId) {
+      loadMemoInPanel(0, memoId);  // 오른쪽은 문서 뷰어 → 메모는 왼쪽에
     } else {
       if (panels[0] && panels[0].memoId === memoId) loadMemoInPanel(1, memoId);
       else loadMemoInPanel(0, memoId);
     }
   }
 
-  function renderList() {
-    memoListEl.innerHTML = "";
-    const ids = Object.keys(memos);
-    if (ids.length === 0) {
-      memoListEl.innerHTML = '<div style="padding:10px 14px;color:#555;font-size:11px;">메모 없음</div>';
+  // ── 전체 검색: 메모(제목/본문/폴더/태그) + 문서 이름 + 색인된 문서 본문 ──
+  const searchInput = document.getElementById("search-input");
+  let searchQuery = "";
+  let searchSeq = 0;
+  let docTextCache = null;
+  async function ensureDocText() {
+    if (docTextCache) return docTextCache;
+    try { docTextCache = (await get(ref(db, "docText"))).val() || {}; } catch (e) { docTextCache = {}; }
+    return docTextCache;
+  }
+  // 일치 부분을 강조한 요약문 (앞뒤 문맥 포함)
+  function snippetEl(text, q) {
+    const flat = text.replace(/\s+/g, " ");
+    const i = flat.toLowerCase().indexOf(q.toLowerCase());
+    const el = document.createElement("div");
+    el.className = "s-snip";
+    if (i < 0) { el.textContent = trunc(flat, 90); return el; }
+    const a = Math.max(0, i - 30), b = Math.min(flat.length, i + q.length + 60);
+    el.append((a > 0 ? "…" : "") + flat.slice(a, i));
+    const bold = document.createElement("b");
+    bold.textContent = flat.slice(i, i + q.length);
+    el.append(bold, flat.slice(i + q.length, b) + (b < flat.length ? "…" : ""));
+    return el;
+  }
+  function focusMemoMatch(panelIdx, q) {
+    const p = panels[panelIdx];
+    if (!p) return;
+    const lq = q.toLowerCase();
+    const w = document.createTreeWalker(p.editorEl, NodeFilter.SHOW_TEXT);
+    while (w.nextNode()) {
+      const i = w.currentNode.nodeValue.toLowerCase().indexOf(lq);
+      if (i < 0) continue;
+      const r = document.createRange();
+      r.setStart(w.currentNode, i);
+      r.setEnd(w.currentNode, i + q.length);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(r);
+      w.currentNode.parentElement.scrollIntoView({ block: "center" });
       return;
     }
+  }
+  async function renderSearchResults() {
+    const q = searchQuery, lq = q.toLowerCase(), seq = ++searchSeq;
+    const has = (t) => (t || "").toLowerCase().includes(lq);
+    const group = (label) => { const g = document.createElement("div"); g.className = "search-group"; g.textContent = label; return g; };
+    const item = (title) => {
+      const it = document.createElement("div");
+      it.className = "search-item";
+      const t = document.createElement("div");
+      t.className = "s-title";
+      t.textContent = title;
+      it.appendChild(t);
+      return it;
+    };
+
+    // 메모
+    const memoHits = Object.keys(memos)
+      .filter(id => { const m = memos[id]; return has(m.title) || has(m.content) || has(m.folder) || (m.tags || []).some(has); })
+      .sort((a, b) => (has(memos[b].title) - has(memos[a].title)) || ((memos[b].ts || 0) - (memos[a].ts || 0)))
+      .slice(0, 40);
+    // 문서 (이름은 즉시, 본문은 색인을 불러온 뒤)
+    const text = await ensureDocText();
+    if (seq !== searchSeq) return;   // 그 사이 검색어가 바뀜
+    const docIds = Object.keys(docs);
+    const unindexed = docIds.filter(id => !docs[id].indexed && !/\.(png|jpe?g|gif|webp|bmp)$/i.test(docs[id].name)).length;
+
+    memoListEl.innerHTML = "";
+    memoListEl.appendChild(group(`메모 (${memoHits.length})`));
+    if (!memoHits.length) { const n = document.createElement("div"); n.className = "search-note"; n.textContent = "일치하는 메모 없음"; memoListEl.appendChild(n); }
+    memoHits.forEach(id => {
+      const m = memos[id];
+      const it = item((m.pinned ? "📌 " : "") + (m.title || "제목 없음") + (m.folder ? `  · 📁 ${m.folder}` : ""));
+      if (has(m.content)) it.appendChild(snippetEl(m.content, q));
+      it.addEventListener("click", () => {
+        sidebarClickMemo(id);
+        const idx = panels.findIndex(pp => pp && pp.memoId === id && !pp.docId);
+        if (idx >= 0) setTimeout(() => focusMemoMatch(idx, q), 60);
+      });
+      memoListEl.appendChild(it);
+    });
+
+    memoListEl.appendChild(group("문서"));
+    let shown = 0;
+    for (const id of docIds) {
+      const d = docs[id];
+      const pages = (text[id] && text[id].pages) || [];
+      const hits = [];
+      pages.forEach((t, i) => { if (has(t)) hits.push({ page: i + 1, t }); });
+      const nameHit = has(d.name);
+      if (!hits.length && !nameHit) continue;
+      shown++;
+      const it = item("📄 " + d.name + (hits.length ? (pages.length > 1 ? `  · ${hits.length}쪽에서 발견` : "  · 본문 일치") : ""));
+      memoListEl.appendChild(it);
+      it.addEventListener("click", () => openDocInRight(id, hits.length ? { page: pages.length > 1 ? hits[0].page : undefined, find: q } : undefined));
+      hits.slice(0, 3).forEach(h => {
+        const sub = document.createElement("div");
+        sub.style.marginTop = "4px";
+        if (pages.length > 1) { const pg = document.createElement("span"); pg.style.cssText = "color:#6a9fd8;font-size:10px;margin-right:6px"; pg.textContent = `p.${h.page}`; sub.appendChild(pg); }
+        sub.appendChild(snippetEl(h.t, q));
+        sub.addEventListener("click", (e) => { e.stopPropagation(); openDocInRight(id, { page: pages.length > 1 ? h.page : undefined, find: q }); });
+        it.appendChild(sub);
+      });
+    }
+    if (!shown) { const n = document.createElement("div"); n.className = "search-note"; n.textContent = "일치하는 문서 없음"; memoListEl.appendChild(n); }
+    if (unindexed) {
+      const n = document.createElement("div");
+      n.className = "search-note";
+      n.textContent = `※ 아직 한 번도 열지 않은 문서 ${unindexed}개는 본문이 검색되지 않습니다. 열어보면 자동으로 색인됩니다.`;
+      memoListEl.appendChild(n);
+    }
+  }
+  let searchTimer = null;
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => { searchQuery = searchInput.value.trim(); renderList(); }, 250);
+  });
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") { searchInput.value = ""; searchQuery = ""; renderList(); searchInput.blur(); }
+  });
+
+  // ── 메모 목록: 고정 → 폴더별 → 미분류, 정렬/태그 필터 ──
+  let memoSort = "recent";
+  let tagFilter = null;
+  let collapsedFolders = new Set();
+  try { memoSort = localStorage.getItem("memoSort") || "recent"; collapsedFolders = new Set(JSON.parse(localStorage.getItem("collapsedFolders")) || []); } catch (e) {}
+  const sortSelect = document.getElementById("sort-select");
+  const tagFilterEl = document.getElementById("tag-filter");
+  sortSelect.value = memoSort;
+  sortSelect.addEventListener("change", () => {
+    memoSort = sortSelect.value;
+    try { localStorage.setItem("memoSort", memoSort); } catch (e) {}
+    renderList();
+  });
+
+  function renderList() {
+    if (searchQuery) { renderSearchResults(); return; }
+    memoListEl.innerHTML = "";
+    // 태그 필터 칩
+    const allTags = [...new Set(Object.values(memos).flatMap(m => m.tags || []))].sort();
+    if (tagFilter && !allTags.includes(tagFilter)) tagFilter = null;
+    tagFilterEl.innerHTML = "";
+    allTags.forEach(t => {
+      const chip = document.createElement("span");
+      chip.className = "tag-chip" + (t === tagFilter ? " on" : "");
+      chip.textContent = "#" + t;
+      chip.addEventListener("click", () => { tagFilter = tagFilter === t ? null : t; renderList(); });
+      tagFilterEl.appendChild(chip);
+    });
+
+    const ids = Object.keys(memos).filter(id => !tagFilter || (memos[id].tags || []).includes(tagFilter));
+    if (ids.length === 0) {
+      memoListEl.innerHTML = `<div style="padding:10px 14px;color:#555;font-size:11px;">${Object.keys(memos).length ? "조건에 맞는 메모 없음" : "메모 없음"}</div>`;
+      return;
+    }
+    const cmp = {
+      recent:  (a, b) => (memos[b].ts || 0) - (memos[a].ts || 0),
+      created: (a, b) => (memos[b].created || 0) - (memos[a].created || 0),
+      title:   (a, b) => (memos[a].title || "").localeCompare(memos[b].title || "", "ko")
+    }[memoSort];
+    ids.sort(cmp);
+
     const id0 = panels[0] ? panels[0].memoId : null;
     const id1 = panels[1] ? panels[1].memoId : null;
-    ids.forEach(id => {
+    const addItem = (id) => {
       const m = memos[id];
       const item = document.createElement("div");
       const inMain = id === id0, inSub = id === id1;
       item.className = "memo-item" + (inMain && inSub ? " active-both" : inMain ? " active-main" : inSub ? " active-sub" : "");
       const titleSpan = document.createElement("span");
       titleSpan.className = "memo-item-title";
-      titleSpan.textContent = m.title || "제목 없음";
+      titleSpan.textContent = (m.pinned ? "📌 " : "") + (m.title || "제목 없음");
+      item.appendChild(titleSpan);
+      if (m.tags && m.tags.length) {
+        const tg = document.createElement("span");
+        tg.className = "memo-item-tags";
+        tg.textContent = m.tags.map(t => "#" + t).join(" ");
+        item.appendChild(tg);
+      }
       const delBtn = document.createElement("button");
       delBtn.className = "delete-btn";
       delBtn.textContent = "×";
       delBtn.addEventListener("click", (e) => { e.stopPropagation(); deleteMemo(id); });
-      item.appendChild(titleSpan);
       item.appendChild(delBtn);
       item.addEventListener("click", () => sidebarClickMemo(id));
       memoListEl.appendChild(item);
-    });
+    };
+    const addHead = (label, key) => {
+      const h = document.createElement("div");
+      h.className = "folder-head";
+      const closed = collapsedFolders.has(key);
+      h.textContent = (closed ? "▸ " : "▾ ") + label;
+      h.addEventListener("click", () => {
+        closed ? collapsedFolders.delete(key) : collapsedFolders.add(key);
+        try { localStorage.setItem("collapsedFolders", JSON.stringify([...collapsedFolders])); } catch (e) {}
+        renderList();
+      });
+      memoListEl.appendChild(h);
+      return closed;
+    };
+
+    const pinned = ids.filter(id => memos[id].pinned);
+    const rest = ids.filter(id => !memos[id].pinned);
+    const folders = [...new Set(rest.map(id => memos[id].folder).filter(Boolean))].sort((a, b) => a.localeCompare(b, "ko"));
+    if (pinned.length && !addHead("📌 고정", "__pinned")) pinned.forEach(addItem);
+    if (!folders.length) {
+      if (pinned.length && rest.length && addHead("메모", "__rest")) return;
+      rest.forEach(addItem);
+      return;
+    }
+    for (const f of folders) {
+      if (!addHead("📁 " + f, "f:" + f)) rest.filter(id => memos[id].folder === f).forEach(addItem);
+    }
+    const none = rest.filter(id => !memos[id].folder);
+    if (none.length && !addHead("미분류", "__none")) none.forEach(addItem);
   }
 
   newBtn.addEventListener("click", () => {
     const newRef = push(memosRef);
-    set(newRef, { title: "새 메모", content: "" }).then(() => loadMemoInPanel(0, newRef.key));
+    const now = Date.now();
+    set(newRef, { title: "새 메모", content: "", created: now, ts: now }).then(() => loadMemoInPanel(0, newRef.key));
   });
 
+  // 삭제 = 휴지통으로 이동 (30일 뒤 자동 삭제)
   function deleteMemo(id) {
-    if (!confirm("이 메모를 삭제할까요?")) return;
-    remove(ref(db, `memos/${id}`));
+    if (!confirm("이 메모를 휴지통으로 옮길까요?")) return;
+    const m = memos[id];
+    if (!m) return;
+    panels.forEach((p) => {
+      if (p && p.memoId === id) {
+        p.memoId = null; p.dirty = false;
+        p.titleEl.value = "";
+        p.editorEl.innerHTML = textToHtml("");
+        p.editorEl.setAttribute("data-placeholder", "메모를 선택하세요...");
+        clearTimeout(p.draftTimer);
+      }
+    });
+    clearDraft(id);
+    set(ref(db, `trash/${id}`), { ...m, deletedAt: Date.now() })
+      .then(() => remove(ref(db, `memos/${id}`)))
+      .catch((e) => { statusEl.textContent = "❌ " + e.message; });
+  }
+
+  let trash = {};
+  const trashRef = ref(db, "trash");
+  const trashBtn = document.getElementById("trash-btn");
+  function openTrashModal() {
+    const render = (body, foot) => {
+      body.innerHTML = "";
+      foot.innerHTML = "";
+      const ids = Object.keys(trash).sort((a, b) => trash[b].deletedAt - trash[a].deletedAt);
+      if (!ids.length) { body.innerHTML = '<div class="empty">휴지통이 비어 있습니다.</div>'; foot.hidden = true; return; }
+      ids.forEach(id => {
+        const t = trash[id];
+        const row = document.createElement("div");
+        row.className = "row";
+        const label = document.createElement("div");
+        label.className = "t";
+        label.innerHTML = '<div></div><div class="sub"></div>';
+        label.firstChild.textContent = t.title || "제목 없음";
+        const left = Math.max(0, 30 - Math.floor((Date.now() - t.deletedAt) / 86400000));
+        label.lastChild.textContent = `삭제 ${new Date(t.deletedAt).toLocaleString()} · ${left}일 뒤 영구 삭제`;
+        row.appendChild(label);
+        row.appendChild(modalButton("복원", () => restoreFromTrash(id)));
+        row.appendChild(modalButton("영구삭제", () => { if (confirm("영구 삭제하면 되돌릴 수 없습니다. 삭제할까요?")) remove(ref(db, `trash/${id}`)); }, "danger"));
+        body.appendChild(row);
+      });
+      foot.hidden = false;
+      foot.appendChild(modalButton("휴지통 비우기", () => { if (confirm("휴지통의 모든 메모를 영구 삭제할까요?")) remove(trashRef); }, "danger"));
+    };
+    openModal("🗑 휴지통", render);
+    modalRender = render;
+  }
+  let modalRender = null;
+  function restoreFromTrash(id) {
+    const { deletedAt, ...m } = trash[id] || {};
+    if (!trash[id]) return;
+    const target = memos[id] ? push(memosRef).key : id;   // 같은 ID가 이미 있으면 새 ID로
+    set(ref(db, `memos/${target}`), m).then(() => remove(ref(db, `trash/${id}`)));
+  }
+  trashBtn.addEventListener("click", openTrashModal);
+
+  // 메모·문서 목록이 모두 도착하면 새로고침 전 상태(분할 여부, 각 패널의 메모/문서)를 한 번 복원한다.
+  let memosReady = false, docsReady = false, restored = false;
+  function tryRestore() {
+    if (restored || !memosReady || !docsReady) return;
+    restored = true;
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem("panelDocs")); } catch (e) {}
+    if (!saved) return;
+    if (saved.split && !splitOn) setSplit(true);
+    (saved.memoIds || []).forEach((id, i) => {
+      if (id && memos[id] && panels[i] && !panels[i].memoId) loadMemoInPanel(i, id);
+    });
+    (saved.ids || []).forEach((id, i) => {
+      if (id && docs[id] && panels[i]) openDoc(i, id);
+    });
   }
 
   const unsubs = [];
@@ -1217,47 +2923,85 @@
   unsubs.push(onValue(memosRef, (snapshot) => {
     memos = snapshot.val() || {};
     statusEl.textContent = "✅ 연결됨";
-    // 열려있는 패널의 pins 갱신
+    // 열려있는 패널: 다른 기기/탭에서 바뀐 내용은 편집 중이 아니면 바로 반영, 편집 중이면 충돌 경고
     panels.forEach((p, i) => {
-      if (p && p.memoId && memos[p.memoId]) {
-        const m = memos[p.memoId];
-        if (m.pins) pins[p.memoId] = new Set(m.pins);
+      if (!p || !p.memoId || !memos[p.memoId]) return;
+      const m = memos[p.memoId];
+      if (m.pins) pins[p.memoId] = new Set(m.pins);
+      if ((m.ts || 0) > p.baseTs) {
+        if (p.dirty) p.panelEl.querySelector(".conflict-note").hidden = false;
+        else if (!p.docId) loadMemoInPanel(i, p.memoId, { sync: true });
       }
     });
     renderList();
-  }, (e) => { statusEl.textContent = "❌ " + e.message; }));
+    memosReady = true;
+    tryRestore();
+  }, (e) => { statusEl.textContent = "❌ " + e.message; memosReady = true; tryRestore(); }));
   }
 
-  // ── 문서 목록 구독 + 새로고침 시 열려있던 문서 복원 ──
-  let docsRestored = false;
+  // ── 휴지통 구독 (30일 지난 항목은 자동 삭제) ──
+  function startTrashSync() {
+    let purged = false;
+    unsubs.push(onValue(ref(db, "trash"), (snap) => {
+      trash = snap.val() || {};
+      trashBtn.textContent = "🗑 휴지통" + (Object.keys(trash).length ? ` (${Object.keys(trash).length})` : "");
+      if (!purged) {
+        purged = true;
+        Object.entries(trash).forEach(([id, t]) => { if (Date.now() - (t.deletedAt || 0) > 30 * 86400000) remove(ref(db, `trash/${id}`)); });
+      }
+      if (modalEl && modalRender && modalEl.querySelector(".modal-head span").textContent.includes("휴지통"))
+        modalRender(modalEl.querySelector(".modal-body"), modalEl.querySelector(".modal-foot"));
+    }, () => {}));
+  }
+
+  // ── 문서 목록 구독 ──
   function startDocSync() {
   unsubs.push(onValue(docsRef, (snapshot) => {
     docs = snapshot.val() || {};
     renderDocList();
     renderUsage();
-    if (docsRestored) return;
-    docsRestored = true;
-    let saved = null;
-    try { saved = JSON.parse(localStorage.getItem("panelDocs")); } catch (e) {}
-    if (!saved || !Array.isArray(saved.ids)) return;
-    const [id0, id1] = saved.ids.map(id => (id && docs[id]) ? id : null);
-    if (saved.split && !splitOn) setSplit(true);
-    if (id0) openDoc(0, id0);
-    if (splitOn && id1) openDoc(1, id1);
-  }, (e) => { statusEl.textContent = "❌ " + e.message; }));
+    docsReady = true;
+    tryRestore();
+  }, (e) => { statusEl.textContent = "❌ " + e.message; docsReady = true; tryRestore(); }));
   }
 
   rebuildPanels();
 
   // ── 인증 상태에 따라 잠금/구독 ──
-  document.getElementById("logout-btn").addEventListener("click", async () => {
+  // 로그아웃: 저장 안 된 내용은 저장을 시도하고, 이 브라우저에 남은 문서 사본(캐시)은 지운다
+  async function doLogout() {
+    panels.forEach((p, i) => { if (p && p.memoId && p.dirty) savePanel(i, true); });
+    await new Promise(r => setTimeout(r, 800));
+    try { await caches.delete("docs-v1"); } catch (e) {}
     await signOut(auth);
     location.reload();  // 메모리의 데이터까지 깨끗이 비움
+  }
+  document.getElementById("logout-btn").addEventListener("click", doLogout);
+
+  // ── 자동 잠금: 일정 시간 아무 조작이 없으면 로그아웃 ──
+  const IDLE_OPTIONS = [0, 5, 15, 30, 60];   // 분 (0 = 사용 안 함)
+  let idleMinutes = 30;
+  try { const v = parseInt(localStorage.getItem("idleMinutes"), 10); if (IDLE_OPTIONS.includes(v)) idleMinutes = v; } catch (e) {}
+  const lockBtn = document.getElementById("lock-btn");
+  const renderLockBtn = () => { lockBtn.textContent = idleMinutes ? `⏱ 자동잠금 ${idleMinutes}분` : "⏱ 자동잠금 끔"; };
+  renderLockBtn();
+  lockBtn.addEventListener("click", () => {
+    idleMinutes = IDLE_OPTIONS[(IDLE_OPTIONS.indexOf(idleMinutes) + 1) % IDLE_OPTIONS.length];
+    try { localStorage.setItem("idleMinutes", String(idleMinutes)); } catch (e) {}
+    renderLockBtn();
   });
+  let lastActivity = Date.now(), loggedIn = false;
+  ["mousemove", "mousedown", "keydown", "touchstart", "wheel", "scroll"].forEach(ev =>
+    document.addEventListener(ev, () => { lastActivity = Date.now(); }, { capture: true, passive: true }));
+  setInterval(() => {
+    if (loggedIn && idleMinutes && Date.now() - lastActivity > idleMinutes * 60000) { loggedIn = false; doLogout(); }
+  }, 15000);
   onAuthStateChanged(auth, (user) => {
     if (user) {
+      loggedIn = true;
+      lastActivity = Date.now();
       lockScreen.style.display = "none";
-      if (!synced) { synced = true; startSync(); startDocSync(); subscribeUsage(); }
+      if (!synced) { synced = true; startSync(); startDocSync(); startTrashSync(); subscribeUsage(); }
     } else {
       lockScreen.style.display = "flex";
       statusEl.textContent = "🔒 로그인 필요";
