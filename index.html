@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#222222"/>
   <title>메모장</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -35,11 +36,13 @@
       background: var(--bg-main);
       font-family: 'Noto Sans KR', sans-serif;
       height: 100vh;
+      height: 100dvh;
       display: flex;
       overflow: hidden;
       transition: background 0.2s;
     }
 
+    #m-bar, #m-backdrop { display: none; }
     #sidebar {
       width: 200px;
       min-width: 200px;
@@ -506,69 +509,113 @@
     .doc-page h1, .doc-page h2, .doc-page h3 { margin: .8em 0 .4em; }
     .doc-page ul, .doc-page ol { margin: .4em 0 .4em 1.6em; }
 
-    /* ── 모바일 최적화 ── */
+    /* ── 모바일 최적화: 사이드바는 서랍(drawer), 편집 영역이 화면 전체를 사용 ── */
     @media (max-width: 768px) {
       body { flex-direction: column; }
+      html, body { overscroll-behavior: none; }
 
+      /* 상단 앱바 */
+      #m-bar {
+        display: flex; align-items: center; gap: 8px; flex-shrink: 0; z-index: 50;
+        height: calc(48px + env(safe-area-inset-top));
+        padding: env(safe-area-inset-top) calc(8px + env(safe-area-inset-right)) 0 calc(8px + env(safe-area-inset-left));
+        background: #222; color: #ddd;
+      }
+      #m-bar button {
+        width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        background: transparent; border: none; color: #ddd; cursor: pointer; border-radius: 8px;
+        -webkit-tap-highlight-color: transparent;
+      }
+      #m-bar button:active { background: #3a3a3a; }
+      #m-bar svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+      #m-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #m-new { background: #3d5a3d !important; color: #fff !important; }
+
+      /* 서랍형 사이드바 */
       #sidebar {
-        width: 100%;
-        min-width: 0;
-        height: auto;
-        max-height: 40vh;
-        flex-direction: column;
-        border-bottom: 2px solid #000;
+        position: fixed; top: 0; left: 0; bottom: 0; z-index: 200;
+        width: min(86vw, 340px); min-width: 0; height: 100%; max-height: none;
+        padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom);
+        transform: translateX(-102%); transition: transform .22s ease; visibility: hidden;
+        box-shadow: 4px 0 24px rgba(0,0,0,.5); border: none;
       }
-
-      /* 햄버거 토글 버튼 (사이드바 접기) */
-      #sidebar.collapsed {
-        max-height: 46px;
-        overflow: hidden;
+      #sidebar.open { transform: none; visibility: visible; }
+      #m-backdrop {
+        display: block; position: fixed; inset: 0; z-index: 190; background: rgba(0,0,0,.5);
+        opacity: 0; pointer-events: none; transition: opacity .22s;
       }
+      #m-backdrop.show { opacity: 1; pointer-events: auto; }
+      #sidebar-header { display: flex; justify-content: space-between; align-items: center; padding: 14px; }
+      #mobile-toggle-icon { font-size: 18px; padding: 0 6px; }
+      #mobile-toggle-icon::before { content: "✕"; }
+      #mobile-toggle-icon { font-size: 0; }
+      #mobile-toggle-icon::before { font-size: 16px; }
 
-      #sidebar-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 14px;
-        cursor: pointer;
-      }
+      .ibtn { height: 42px; }
+      .ibtn.primary { width: 46px; }
+      #toolbar { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      #search-input { font-size: 16px; padding-top: 11px; padding-bottom: 11px; }
+      #memo-list { max-height: none; flex: 1 1 0; }
+      #doc-list { max-height: 24vh; }
+      .memo-item { padding: 13px 14px; font-size: 15px; }
+      .delete-btn { font-size: 20px; padding: 0 4px 0 12px; }
+      .dl-btn { padding: 0 6px; }
+      .dl-btn svg { width: 18px; height: 18px; }
+      .search-item { padding: 12px 14px; font-size: 14px; }
+      .folder-head { padding: 9px 14px; font-size: 11px; }
 
-      #mobile-toggle-icon {
-        font-size: 14px;
-        transition: transform 0.2s;
-      }
-      #sidebar.collapsed #mobile-toggle-icon {
-        transform: rotate(-90deg);
-      }
-
-      .ibtn { height: 38px; }
-      #search-input { padding-top: 10px; padding-bottom: 10px; }
-
-      #memo-list {
-        max-height: 30vh;
-      }
-
-      .memo-item {
-        padding: 12px 14px;
-        font-size: 14px;
-      }
-
-      #panels { flex-direction: column; }
-
-      .panel-header {
-        padding: 10px 12px 8px;
-      }
-      .panel-title-input { font-size: 16px; }
-      .save-btn { padding: 8px 14px; font-size: 13px; }
-
-      .memo-editor { padding: 14px 16px; font-size: 15px; }
-
-      .gutter { width: 22px; min-width: 22px; }
-      .pin-dot { width: 9px; height: 9px; }
-
-      /* 분할 모드는 모바일에서 세로로 전환 */
+      /* 패널 */
+      #panels { flex: 1; min-height: 0; flex-direction: column; }
+      .panel { min-height: 0; }
       .panel + .panel { border-left: none; border-top: 3px solid #bbb; }
       .divider { display: none !important; }
+      .panel:nth-child(1) .panel-header, .panel:nth-child(3) .panel-header { border-top-width: 2px; }
+
+      .panel-header { flex-wrap: wrap; gap: 6px 8px; padding: 8px 12px; }
+      .panel-title-input { flex: 1 1 100%; font-size: 17px; padding: 6px 0; order: 0; }
+      .meta-btn, .doc-btn, .save-btn { order: 1; height: 38px; padding: 0 12px; font-size: 13px; display: inline-flex; align-items: center; }
+      .save-btn { margin-left: auto; min-width: 64px; justify-content: center; }
+
+      .memo-editor { padding: 12px 14px; font-size: 16px; -webkit-overflow-scrolling: touch; }
+      .memo-editor p { line-height: 1.85; }
+      .gutter { width: 24px; min-width: 24px; }
+      .pin-dot { width: 10px; height: 10px; }
+
+      .panel-bottom { padding: 4px 12px calc(4px + env(safe-area-inset-bottom)); gap: 6px; flex-wrap: nowrap; overflow: hidden; }
+      .fmt-bar { gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1; min-width: 0; }
+      .fmt-bar::-webkit-scrollbar { display: none; }
+      .fmt-bar button { height: 32px; min-width: 36px; padding: 0 8px; font-size: 13px; flex-shrink: 0; }
+      .conflict-note { font-size: 10px; }
+      .bottom-right { flex-shrink: 0; }
+
+      /* 문서 뷰어 */
+      .doc-bar { padding: 6px 10px; gap: 6px; }
+      .doc-name { flex: 1 1 100%; font-size: 13px; }
+      .doc-actions { width: 100%; gap: 5px; justify-content: flex-start; }
+      .pdf-nav button, .zoom-ctl button, .find-btn, .rect-btn, .doc-dl, .ann-count, .doc-close { height: 34px; min-width: 34px; font-size: 13px; }
+      .doc-close { margin-left: auto; }
+      .pg-input { height: 34px; font-size: 14px; }
+      .doc-body { padding: 8px; -webkit-overflow-scrolling: touch; }
+      .find-bar { padding: 6px 10px; flex-wrap: wrap; }
+      .find-input { max-width: none; font-size: 16px; min-width: 0; }
+      .doc-page { padding: 18px 16px; font-size: 14px; }
+      .ann-list { top: auto; left: 8px; right: 8px; width: auto; max-width: none; max-height: 50%; }
+
+      /* 팝업/모달 */
+      .modal-bg { align-items: flex-end; }
+      .modal-box { width: 100%; max-width: 100%; max-height: 88dvh; border-bottom: none; }
+      .modal-head { padding: 14px 16px; }
+      .modal-head button { font-size: 20px; padding: 4px 8px; }
+      .modal-foot { padding-bottom: calc(10px + env(safe-area-inset-bottom)); flex-wrap: wrap; }
+      .modal-box button.btn { padding: 10px 14px; font-size: 13px; }
+      #meta-pop { width: calc(100vw - 16px); max-width: 320px; }
+      #meta-pop input[type="text"] { font-size: 16px; padding: 8px; }
+      #ann-pop { max-width: calc(100vw - 16px); }
+      #ann-pop .ann-note { width: min(240px, calc(100vw - 40px)); font-size: 16px; }
+
+      /* 로그인 입력: iOS 자동 확대 방지 */
+      #lock-screen input { font-size: 16px !important; width: min(280px, 80vw) !important; }
+      #lock-screen button { width: min(304px, 80vw + 24px) !important; padding: 12px 16px !important; }
     }
   </style>
 </head>
@@ -620,6 +667,13 @@
   ">로그인</button>
   <div id="pw-error" style="color: #e03131; font-size: 12px; font-family: 'Noto Sans KR', sans-serif; height: 16px;"></div>
 </div>
+
+<div id="m-bar">
+  <button id="m-menu" aria-label="메모 목록 열기"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+  <div id="m-title">MEMOS</div>
+  <button id="m-new" aria-label="새 메모"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+</div>
+<div id="m-backdrop"></div>
 
 <div id="sidebar">
   <div id="sidebar-header">MEMOS <span id="mobile-toggle-icon">▾</span></div>
@@ -695,13 +749,30 @@
   document.getElementById("login-btn").addEventListener("click", doLogin);
   setTimeout(() => emailInput.focus(), 100);
 
-  // ── 모바일 사이드바 접기/펼치기 ──
+  // ── 모바일 사이드바(서랍) 열기/닫기 ──
   const sidebarHeader = document.getElementById("sidebar-header");
   const sidebarEl     = document.getElementById("sidebar");
-  sidebarHeader.addEventListener("click", () => {
-    if (window.innerWidth <= 768) {
-      sidebarEl.classList.toggle("collapsed");
-    }
+  const backdropEl    = document.getElementById("m-backdrop");
+  const isMobile = () => window.innerWidth <= 768;
+  function setDrawer(open) {
+    sidebarEl.classList.toggle("open", open);
+    backdropEl.classList.toggle("show", open);
+  }
+  document.getElementById("m-menu").addEventListener("click", () => setDrawer(true));
+  document.getElementById("m-new").addEventListener("click", () => document.getElementById("new-btn").click());
+  backdropEl.addEventListener("click", () => setDrawer(false));
+  sidebarHeader.addEventListener("click", () => { if (isMobile()) setDrawer(false); });
+  // 메모/문서/검색결과를 고르거나 새 메모를 만들면 서랍을 닫아 편집 화면으로 돌아간다
+  sidebarEl.addEventListener("click", (e) => {
+    if (!isMobile()) return;
+    if (e.target.closest(".delete-btn, .dl-btn")) return;
+    if (e.target.closest(".memo-item, .search-item, #new-btn")) setDrawer(false);
+  });
+  window.addEventListener("resize", () => { if (!isMobile()) setDrawer(false); });
+  // 상단 앱바 제목: 현재 열린 메모 제목
+  const mTitle = document.getElementById("m-title");
+  document.addEventListener("input", (e) => {
+    if (e.target.classList && e.target.classList.contains("panel-title-input")) mTitle.textContent = e.target.value || "MEMOS";
   });
 
   // ── 아이콘 (24x24 선 아이콘). 버튼은 아이콘만 쓰고 설명은 title(툴팁)로 ──
@@ -2622,7 +2693,7 @@
     // Ctrl(Cmd) + K: 전체 검색
     if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === "k") {
       e.preventDefault();
-      if (window.innerWidth <= 768) sidebarEl.classList.remove("collapsed");
+      if (window.innerWidth <= 768) setDrawer(true);
       searchInput.focus();
       searchInput.select();
     }
