@@ -109,6 +109,8 @@
       border-top: 1px solid #333; border-bottom: 1px solid #2e2e2e;
     }
     #doc-list { max-height: 28vh; overflow-y: auto; }
+    /* 문서를 열면 메모 제목/저장 헤더는 숨기고 문서 바만 보인다 */
+    .panel.doc-open .panel-header { display: none; }
     #usage { padding: 8px 14px 4px; font-size: 10px; color: #888; border-top: 1px solid #2a2a2a; }
     #usage .u-row { display: flex; justify-content: space-between; margin-top: 4px; }
     #usage .u-bar { height: 3px; background: #333; margin-top: 2px; }
@@ -1817,10 +1819,21 @@
     } else if (j.page) jumpPage(p, j.page);
   }
 
-  // DOCS 클릭: 문서를 메모 위가 아니라 오른쪽 패널에 띄운다 (왼쪽=메모, 오른쪽=문서)
+  // 메모/문서를 넣을 패널 고르기: 분할 아님 → 항상 하나뿐인 패널.
+  // 분할 → 이미 왼쪽에 열린 것을 다시 누르면 오른쪽, 아니면 비어 있는 패널(왼쪽 우선), 둘 다 차 있으면 왼쪽을 교체
+  function pickPanel(kind, id) {
+    if (!splitOn) return 0;
+    const same = (p) => p && (kind === "doc" ? p.docId === id : (p.memoId === id && !p.docId));
+    if (same(panels[0])) return 1;
+    if (same(panels[1])) return 1;
+    const empty = (p) => p && !p.memoId && !p.docId;
+    if (empty(panels[0])) return 0;
+    if (empty(panels[1])) return 1;
+    return 0;
+  }
   function openDocInRight(docId, jump) {
-    if (!splitOn) setSplit(true);
-    if (jump) openDocAt(1, docId, jump); else openDoc(1, docId);
+    const idx = pickPanel("doc", docId);
+    if (jump) openDocAt(idx, docId, jump); else openDoc(idx, docId);
   }
   function sidebarClickDoc(docId) { openDocInRight(docId); }
 
@@ -2781,14 +2794,7 @@
   }
 
   function sidebarClickMemo(memoId) {
-    if (!splitOn) {
-      loadMemoInPanel(0, memoId);
-    } else if (panels[1] && panels[1].docId) {
-      loadMemoInPanel(0, memoId);  // 오른쪽은 문서 뷰어 → 메모는 왼쪽에
-    } else {
-      if (panels[0] && panels[0].memoId === memoId) loadMemoInPanel(1, memoId);
-      else loadMemoInPanel(0, memoId);
-    }
+    loadMemoInPanel(pickPanel("memo", memoId), memoId);
   }
 
   // ── 전체 검색: 메모(제목/본문/폴더/태그) + 문서 이름 + 색인된 문서 본문 ──
@@ -3084,16 +3090,7 @@
   function tryRestore() {
     if (restored || !memosReady || !docsReady) return;
     restored = true;
-    let saved = null;
-    try { saved = JSON.parse(localStorage.getItem("panelDocs")); } catch (e) {}
-    if (!saved) return;
-    if (saved.split && !splitOn) setSplit(true);
-    (saved.memoIds || []).forEach((id, i) => {
-      if (id && memos[id] && panels[i] && !panels[i].memoId) loadMemoInPanel(i, id);
-    });
-    (saved.ids || []).forEach((id, i) => {
-      if (id && docs[id] && panels[i]) openDoc(i, id);
-    });
+    // 처음 들어오면 항상 빈 화면(분할 아님)으로 시작한다
   }
 
   const unsubs = [];
